@@ -2,29 +2,27 @@
     "files.trimTrailingWhitespace": true,
     "files.trimFinalNewlines": true,
     "editor.formatOnSave": true,
-    "python.formatting.autopep8Args": [
+    "autopep8.args": [
         "--ignore=E501"
     ],
-    "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.linting.banditEnabled": true,
-    "python.linting.banditArgs": [
-        "-s=B110,B404,B602,B603,B608"
+    "pylint.args": [
+        "--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,invalid-name,line-too-long,logging-not-lazy,redefined-outer-name",
+        "--generated-members=numpy.* ,torch.*",
     ],
-    "python.linting.flake8Enabled": true,
-    "python.linting.flake8Args": [
+    "flake8.args": [
         "--max-line-length=999",
-        "--ignore=E402,W504",
+        "--ignore=E402,W503",
     ],
-    "python.linting.mypyEnabled": true,
+    "mypy-type-checker.args": [
+        "--ignore-missing-imports"
+    ],
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticSeverityOverrides": {
         "reportGeneralTypeIssues": "none",
         "reportOptionalMemberAccess": "none",
         "reportUnknownParameterType": "none"
     },
-    "python.formatting.provider": "autopep8",
     "[python]": {
-        "editor.defaultFormatter": "ms-python.python"
-    }
+        "editor.defaultFormatter": "ms-python.autopep8",
+    },
 }

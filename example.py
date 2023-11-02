@@ -3,9 +3,10 @@
 from typing import Dict, List
 import os
 import json
-import pandas as pd
 from datetime import date
 import requests
+import pandas as pd
+
 
 # PATS RESTfull api usage example. Perform the following steps:
 # 1. Choose the server
