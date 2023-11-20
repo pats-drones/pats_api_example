@@ -234,8 +234,10 @@ if __name__ == "__main__":
     spots = download_spots(token, some_section['id'])  # download two dicts (trap-eyes and c systems) listing all spots for this section.
     counts = download_counts(token, some_section['id'], insect_ids, date.today() - timedelta(days=100), date.today())  # download the counts for all spots in the section, for the selected insect(s), for the selected date range
 
-    example_c_plot(counts, some_section, insect_table)
-    example_trapeye_plot(counts, some_section, insect_table)
+    if len(counts['c']):
+        example_c_plot(counts, some_section, insect_table)
+    if len(counts['trapeye']):
+        example_trapeye_plot(counts, some_section, insect_table)
 
     # up to this point Trap-Eye and PATS-C data is virtually the same. However when we go lower TrapEye periodically photographes a bulk and PATS-C stereo-video records individuals.
 
