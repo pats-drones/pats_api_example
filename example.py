@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # pylint: disable= line-too-long, missing-function-docstring,missing-class-docstring, invalid-name,  broad-exception-raised, unused-import,missing-timeout
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from io import BytesIO
 import os
 import json
@@ -119,16 +119,25 @@ def download_trapeye_photo(token: str, section_id: int, row_id: int, post_id: in
     return Image.open(BytesIO(response.content))
 
 
-def download_c_detection_features(token: str, section_id: int, row_id: int, post_id: int, detection_class_id: int, start_datetime: datetime, end_datetime: datetime) -> Image:
+def download_c_detection_features(token: str, section_id: int, row_id: Optional[int], post_id: Optional[int], system_id: Optional[int], detection_class_id: int, start_datetime: datetime, end_datetime: datetime) -> Image:
     headers = {'Authorization': 'Bearer ' + token}
-    params = {
-        'section_id': str(section_id),
-        'row_id': str(row_id),
-        'post_id': str(post_id),
-        'detection_class_id': str(detection_class_id),
-        'start_datetime': start_datetime.strftime('%Y%m%d_%H%M%S'),
-        'end_datetime': end_datetime.strftime('%Y%m%d_%H%M%S'),
-    }
+    if system_id is None:
+        params = {
+            'section_id': str(section_id),
+            'row_id': str(row_id),
+            'post_id': str(post_id),
+            'detection_class_id': str(detection_class_id),
+            'start_datetime': start_datetime.strftime('%Y%m%d_%H%M%S'),
+            'end_datetime': end_datetime.strftime('%Y%m%d_%H%M%S'),
+        }
+    else:
+        params = {
+            'section_id': str(section_id),
+            'system_id': str(system_id),
+            'detection_class_id': str(detection_class_id),
+            'start_datetime': start_datetime.strftime('%Y%m%d_%H%M%S'),
+            'end_datetime': end_datetime.strftime('%Y%m%d_%H%M%S'),
+        }
     response = requests.get(server + 'api/download_detection_features', params=params, headers=headers)
 
     if response.status_code != 200:
@@ -242,6 +251,9 @@ if __name__ == "__main__":
     # up to this point Trap-Eye and PATS-C data is virtually the same. However when we go lower TrapEye periodically photographes a bulk and PATS-C stereo-video records individuals.
 
     # First, let's get an image from a Trap-Eye
+    some_row_id = None
+    some_post_id = None
+    some_system_id = None
     if len(spots['trapeye']):
         some_row_id = spots['trapeye'][0]['row_id']  # just a random row and post for the example
         some_post_id = spots['trapeye'][0]['post_id']
@@ -252,13 +264,16 @@ if __name__ == "__main__":
     # Now, let's go get a flight track and video from PATS-C
     if len(spots['c']):
         # just a random row, post and insect for the example
-        some_row_id = spots['c'][0]['row_id']
-        some_post_id = spots['c'][0]['post_id']
+        if spots['c'][0]['row_id'] is None or spots['c'][0]['post_id'] is None:
+            some_system_id = spots['c'][0]['system_id']  # legacy for not all systems have a row/post location.
+        else:
+            some_row_id = spots['c'][0]['row_id']
+            some_post_id = spots['c'][0]['post_id']
         some_insect_class: Dict = next((item for item in some_section['detection_classes'] if item['available_in_c']), {})
 
         start_datetime = (datetime.today() - timedelta(days=100)).replace(hour=12, minute=0, second=0, microsecond=0)
         end_datetime = (datetime.today() - timedelta(days=1)).replace(hour=12, minute=0, second=0, microsecond=0)
-        df_detections = download_c_detection_features(token, some_section['id'], some_row_id, some_post_id, some_insect_class['id'], start_datetime, end_datetime)
+        df_detections = download_c_detection_features(token, some_section['id'], some_row_id, some_post_id, some_system_id, some_insect_class['id'], start_datetime, end_datetime)
         example_c_scatter_plot(df_detections, some_insect_class)
         some_insect = df_detections['uid'].iloc[0]
         df_flight = download_c_flight_track(token, some_section['id'], some_insect)
