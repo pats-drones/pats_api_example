@@ -229,6 +229,7 @@ def example_c_flight_3d_plot(df_flight: pd.DataFrame):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(df_flight['sposX_insect'], df_flight['sposY_insect'], df_flight['sposZ_insect'])
+    plt.title('Flight track of an insect')
     ax.set_xlabel('X Position')
     ax.set_ylabel('Y Position')
     ax.set_zlabel('Z Position')
