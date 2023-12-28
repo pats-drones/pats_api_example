@@ -9,7 +9,7 @@ from PIL import Image
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
-# from mpl_toolkits.mplot3d import Axes3D
+
 # PATS RESTfull api usage example. Perform the following steps:
 # 1. Choose the server
 # 2. Create a .auth file with the pats-c user on the first line and password one the second line
@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 beta_server_dns = 'https://beta.pats-c.com/'
 main_server_dns = 'https://pats-c.com/'
 pats_local_testing = 'http://127.0.0.1:5000/'
-server = beta_server_dns
+server = main_server_dns
 
 
 def read_creds() -> Tuple[str, str]:
