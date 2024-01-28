@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 beta_server_dns = 'https://beta.pats-c.com/'
 main_server_dns = 'https://pats-c.com/'
 pats_local_testing = 'http://127.0.0.1:5000/'
-server = main_server_dns
+server = beta_server_dns
 
 
 def read_creds() -> Tuple[str, str]:
@@ -172,7 +172,7 @@ def download_c_video(token: str, section_id: int, detection_uid: int) -> Image:
     return response.content
 
 
-def example_c_plot(counts: Dict, section: Dict, insect_table: Dict) -> None:
+def example_c_binned_per_day_plot(counts: Dict, section: Dict, insect_table: Dict) -> None:
     for patsc in counts['c']:
         df = pd.DataFrame.from_records(patsc['counts'])
         df['date'] = pd.to_datetime(df['date'], format='%Y%m%d')
@@ -190,6 +190,26 @@ def example_c_plot(counts: Dict, section: Dict, insect_table: Dict) -> None:
         label = label.strip()
         plt.title(f"PATS-C @ {label} row {patsc['row_id']} post {patsc['post_id']}")
         plt.xlabel('Date')
+        plt.ylabel('Insect flights')
+        plt.legend()
+
+
+def example_c_24h_distribution_plot(counts: Dict, section: Dict, insect_table: Dict) -> None:
+    for patsc in counts['c']:
+        df = pd.DataFrame.from_records(patsc['counts24h'])
+        plt.figure()
+        for insect_id in df.columns:
+            insect = insect_table[insect_id]
+            df[insect_id].plot(label=insect['label'])
+
+        label = section['customer_name'] + ' '
+        if section['greenhouse_name'] is not None:
+            label += section['greenhouse_name'] + ' '
+        if section['name'] is not None:
+            label += section['name']
+        label = label.strip()
+        plt.title(f"PATS-C 24h distribution @ {label} row {patsc['row_id']} post {patsc['post_id']}")
+        plt.xlabel('Hour')
         plt.ylabel('Insect flights')
         plt.legend()
 
@@ -245,7 +265,8 @@ if __name__ == "__main__":
     counts = download_counts(token, some_section['id'], insect_ids, date.today() - timedelta(days=100), date.today())  # download the counts for all spots in the section, for the selected insect(s), for the selected date range
 
     if len(counts['c']):
-        example_c_plot(counts, some_section, insect_table)
+        example_c_binned_per_day_plot(counts, some_section, insect_table)
+        example_c_24h_distribution_plot(counts, some_section, insect_table)
     if len(counts['trapeye']):
         example_trapeye_plot(counts, some_section, insect_table)
 
