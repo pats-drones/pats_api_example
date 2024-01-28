@@ -80,7 +80,9 @@ def download_counts(token: str, section_id: int, detection_class_ids: List[int],
         'section_id': str(section_id),
         'start_date': start_date.strftime('%Y%m%d'),
         'end_date': end_date.strftime('%Y%m%d'),
-        'detection_class_ids': detection_class_ids_param,  # optional. Defaults to None, in which case all available counts are returned
+        'detection_class_ids': detection_class_ids_param,  # optional. Defaults to None, in which case all available counts are returned.
+        'bin_mode': 'H',  # optional. Defaults to 'D', which is daily binning. Second option is 'H' which is hourly binning.
+        'average_24h_bin': '1',  # optional. Defaults to 0. Include the averaged daily insect distribution within the selected date range.
     }
     response = requests.get(server + 'api/counts', params=params, headers=headers)
     if response.status_code != 200:
@@ -175,7 +177,11 @@ def download_c_video(token: str, section_id: int, detection_uid: int) -> Image:
 def example_c_binned_per_day_plot(counts: Dict, section: Dict, insect_table: Dict) -> None:
     for patsc in counts['c']:
         df = pd.DataFrame.from_records(patsc['counts'])
-        df['date'] = pd.to_datetime(df['date'], format='%Y%m%d')
+        if 'date' in df.columns:  # Note: in case of bin_mode D we have a 'date'. In case of bin_mode H we have 'datetime' instead
+            df['date'] = pd.to_datetime(df['date'], format='%Y%m%d')
+        else:
+            df['date'] = pd.to_datetime(df['datetime'], format='%Y%m%d_%H%M%S')
+            df = df.drop(columns=['datetime'])
         df = df.set_index('date')
         plt.figure()
         for insect_id in df.columns:
@@ -196,7 +202,9 @@ def example_c_binned_per_day_plot(counts: Dict, section: Dict, insect_table: Dic
 
 def example_c_24h_distribution_plot(counts: Dict, section: Dict, insect_table: Dict) -> None:
     for patsc in counts['c']:
-        df = pd.DataFrame.from_records(patsc['counts24h'])
+        if 'avg_counts_24h' not in patsc:
+            return  # the average_24h_bin was turned off in the api/count call
+        df = pd.DataFrame.from_records(patsc['avg_counts_24h'])
         plt.figure()
         for insect_id in df.columns:
             insect = insect_table[insect_id]
@@ -280,8 +288,11 @@ if __name__ == "__main__":
         some_row_id = spots['trapeye'][0]['row_id']  # just a random row and post for the example
         some_post_id = spots['trapeye'][0]['post_id']
         photo_list = download_trapeye_photo_list(token, some_section['id'], some_row_id, some_post_id, date.today() - timedelta(days=100), date.today())
-        image = download_trapeye_photo(token, some_section['id'], some_row_id, some_post_id, photo_list[0])
-        image.show()
+        try:
+            image = download_trapeye_photo(token, some_section['id'], some_row_id, some_post_id, photo_list[0])
+            image.show()
+        except Exception as e:  # pylint: disable=broad-except
+            print(e)  # happens with testing on local pats server where we don't have the images.
 
     # Now, let's go get a flight track and video from PATS-C
     if len(spots['c']):
