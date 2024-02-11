@@ -81,7 +81,7 @@ def download_counts(token: str, section_id: int, detection_class_ids: List[int],
         'start_date': start_date.strftime('%Y%m%d'),
         'end_date': end_date.strftime('%Y%m%d'),
         'detection_class_ids': detection_class_ids_param,  # optional. Defaults to None, in which case all available counts are returned.
-        'bin_mode': 'H',  # optional. Defaults to 'D', which is daily binning. Second option is 'H' which is hourly binning.
+        'bin_mode': 'D',  # optional. Defaults to 'D', which is daily binning. Second option is 'H' which is hourly binning.
         'average_24h_bin': '1',  # optional. Defaults to 0. Include the averaged daily insect distribution within the selected date range.
     }
     response = requests.get(server + 'api/counts', params=params, headers=headers)
