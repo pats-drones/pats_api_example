@@ -4,11 +4,11 @@
     {
       "name": "Current File",
       "cwd": "${fileDirname}",
-      "type": "python",
+      "type": "debugpy",
       "args": [],
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal"
-    },  
+    },
   ]
 }

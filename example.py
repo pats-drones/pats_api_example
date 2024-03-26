@@ -82,7 +82,7 @@ def download_counts(token: str, section_id: int, detection_class_ids: List[int],
         'end_date': end_date.strftime('%Y%m%d'),
         'detection_class_ids': detection_class_ids_param,  # optional. Defaults to None, in which case all available counts are returned.
         'bin_mode': 'D',  # optional. Defaults to 'D', which is daily binning. Second option is 'H' which is hourly binning.
-        'average_24h_bin': '1',  # optional. Defaults to 0. Include the averaged daily insect distribution within the selected date range.
+        'average_24h_bin': '0',  # optional. Defaults to 0. Include the averaged daily insect distribution within the selected date range.
     }
     response = requests.get(server + 'api/counts', params=params, headers=headers)
     if response.status_code != 200:
@@ -106,7 +106,7 @@ def download_trapeye_photo_list(token: str, section_id: int, row_id: int, post_i
     return json.loads(response.text)['photos']
 
 
-def download_trapeye_photo(token: str, section_id: int, row_id: int, post_id: int, datetime_str: str) -> Image:
+def download_trapeye_photo(token: str, section_id: int, row_id: int, post_id: int, datetime_str: str) -> Image.Image:
     headers = {'Authorization': 'Bearer ' + token}
     params = {
         'section_id': str(section_id),
@@ -121,7 +121,7 @@ def download_trapeye_photo(token: str, section_id: int, row_id: int, post_id: in
     return Image.open(BytesIO(response.content))
 
 
-def download_c_detection_features(token: str, section_id: int, row_id: Optional[int], post_id: Optional[int], system_id: Optional[int], detection_class_id: int, start_datetime: datetime, end_datetime: datetime) -> Image:
+def download_c_detection_features(token: str, section_id: int, row_id: Optional[int], post_id: Optional[int], system_id: Optional[int], detection_class_id: int, start_datetime: datetime, end_datetime: datetime) -> pd.DataFrame:
     headers = {'Authorization': 'Bearer ' + token}
     if system_id is None:
         params = {
@@ -147,7 +147,7 @@ def download_c_detection_features(token: str, section_id: int, row_id: Optional[
     return pd.DataFrame.from_records(json.loads(response.text)['data'])
 
 
-def download_c_flight_track(token: str, section_id: int, detection_uid: int) -> Image:
+def download_c_flight_track(token: str, section_id: int, detection_uid: int) -> pd.DataFrame:
     headers = {'Authorization': 'Bearer ' + token}
     params = {
         'section_id': str(section_id),
@@ -160,7 +160,7 @@ def download_c_flight_track(token: str, section_id: int, detection_uid: int) -> 
     return pd.DataFrame.from_records(json.loads(response.text)['data'])
 
 
-def download_c_video(token: str, section_id: int, detection_uid: int) -> Image:
+def download_c_video(token: str, section_id: int, detection_uid: int) -> bytes:
     headers = {'Authorization': 'Bearer ' + token}
     params = {
         'section_id': str(section_id),
@@ -244,7 +244,7 @@ def example_trapeye_plot(counts: Dict, section: Dict, insect_table: Dict) -> Non
     plt.legend()
 
 
-def example_c_scatter_plot(detections_df: pd.DataFrame, insect_class: Dict):
+def example_c_scatter_plot(detections_df: pd.DataFrame, insect_class: Dict) -> None:
     plt.figure(figsize=(10, 6))
     plt.scatter(detections_df['duration'], detections_df['size'])
     plt.title(f'PATS-C {insect_class["label"]} detections')
@@ -253,7 +253,7 @@ def example_c_scatter_plot(detections_df: pd.DataFrame, insect_class: Dict):
     plt.grid(True)
 
 
-def example_c_flight_3d_plot(df_flight: pd.DataFrame):
+def example_c_flight_3d_plot(df_flight: pd.DataFrame) -> None:
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(df_flight['sposX_insect'], df_flight['sposY_insect'], df_flight['sposZ_insect'])
