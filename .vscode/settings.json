@@ -16,11 +16,19 @@
     "mypy-type-checker.args": [
         "--ignore-missing-imports"
     ],
-    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.typeCheckingMode": "standard",
     "python.analysis.diagnosticSeverityOverrides": {
+        "reportUnusedImport": "information",
+        "reportUnknownParameterType": "none",
         "reportGeneralTypeIssues": "none",
+        "reportArgumentType": "none",
+        "reportCallIssue": "none",
+        "reportReturnType": "none",
+        "reportAttributeAccessIssue": "none",
+        "reportOperatorIssue": "none",
+        "reportIndexIssue": "none",
         "reportOptionalMemberAccess": "none",
-        "reportUnknownParameterType": "none"
+        "reportAssignmentType": "none"
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8",

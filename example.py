@@ -11,10 +11,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # PATS RESTfull api usage example. Perform the following steps:
-# 1. Choose the server
-# 2. Create a .auth file with the pats-c user on the first line and password one the second line
-# 3. Run this script
-# 4. Profit
+# 1. Choose the server below.
+# 2. Create a .auth file with the pats-c user on the first line and password one the second line. It must be in the same folder as this script.
+# 3. Run this script.
+# 4. Profit.
 
 beta_server_dns = 'https://beta.pats-c.com/'
 main_server_dns = 'https://pats-c.com/'
@@ -230,7 +230,7 @@ def example_trapeye_plot(counts: Dict, section: Dict, insect_table: Dict) -> Non
     plt.figure()
     for insect_id in df.columns:
         insect = insect_table[insect_id]
-        df[insect_id].plot(label=insect['label'] + ' (' + insect['bb_label'] + ')')
+        df[insect_id].plot(label=f'''{insect['label']} ({insect['bb_label']})''')
 
     label = section['customer_name'] + ' '
     if section['greenhouse_name'] is not None:
@@ -240,7 +240,7 @@ def example_trapeye_plot(counts: Dict, section: Dict, insect_table: Dict) -> Non
     label = label.strip()
     plt.title(f"Trap-Eye @ {label} row {trapeye['row_id']} post {trapeye['post_id']}")
     plt.xlabel('Date')
-    plt.ylabel('Insects new on the card')
+    plt.ylabel('Insects fresh on the card')
     plt.legend()
 
 
