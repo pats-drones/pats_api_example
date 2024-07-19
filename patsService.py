@@ -487,7 +487,7 @@ class PatsService:
             end_date (datetime): the end date of the measurements, date of the latest measurment.
 
         Returns:
-            pd.DataFrame: _description_
+            pd.DataFrame: pandas dataframe containing the information contained in data.
         """
         self.logger.debug("Retrieving c detection features")
         # Format the start and end date.
@@ -528,4 +528,78 @@ class PatsService:
             sys.exit(1)
 
         self.logger.info("Successfullly downloaded c detection features")
+        return pd.DataFrame.from_records(response.json()["data"])
+
+    def download_c_flight_track(self, section_id: int, detection_uid: int) -> pd.DataFrame:
+        """Download c flight track from pats server.
+
+        All units are in SI standart base units.
+
+        json example:
+            {
+                "data": [
+                    {
+                        "Unnamed: 32": NaN,
+                        "acc_valid_insect": 0,
+                        "disparity_insect": 20.8008,
+                        "elapsed": 1207.1165,
+                        "foundL_insect": 1,
+                        "fp": "fp_not_a_fp",
+                        "hunt_id": -1,
+                        "imLx_insect": 28,
+                        "imLx_pred_insect": -1.0,
+                        "imLy_insect": 268,
+                        "imLy_pred_insect": -1.0,
+                        "light_level": 0.226651,
+                        "motion_sum_insect": 36,
+                        "n_frames_lost_insect": 0,
+                        "n_frames_tracking_insect": 1,
+                        "posX_insect": 1.8169,
+                        "posY_insect": -1.227,
+                        "posZ_insect": -1.52218,
+                        "pos_valid_insect": 1,
+                        "radius_insect": 0.0102218,
+                        "rs_id": 108478,
+                        "saccX_insect": 0.0,
+                        "saccY_insect": 0.0,
+                        "saccZ_insect": 0.0,
+                        "score_insect": 0.0,
+                        "size_insect": 4.47214,
+                        "sposX_insect": 1.8169,
+                        "sposY_insect": -1.227,
+                        "sposZ_insect": -1.52218,
+                        "svelX_insect": 0.0,
+                        "svelY_insect": 0.0,
+                        "svelZ_insect": 0.0,
+                        "vel_valid_insect": 0
+                    },
+                ]
+            }
+
+
+        Args:
+            section_id (int): the id of the section where the detection took place.
+            detection_uid (int): the unique id of the detection.
+
+        Returns:
+            pd.DataFrame: pandas dataframe containing the informatin contained in data.
+        """
+        self.logger.debug("Retrieving c flight track")
+        # Initialize the header and request body.
+        headers = {"Authorization": "Bearer " + self.token}
+        params = {
+            'section_id': str(section_id),
+            'detection_uid': str(detection_uid),
+        }
+
+        # Send request, and validate response code.
+        response = requests.get(self.server + "/api/download_c_flight_track", headers=headers, params=params, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(
+                f"Download c flight track failed: {response.status_code}, msg: {response.text}",
+                exc_info=True,
+            )
+            sys.exit(1)
+
+        self.logger.info("Successfully downloaded c flight track")
         return pd.DataFrame.from_records(response.json()["data"])
