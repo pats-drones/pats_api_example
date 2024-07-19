@@ -160,6 +160,29 @@ class PatsService:
     def download_spots(self, section_id: int, map_snapping: bool = True) -> dict:
         """Method used to download the spots from the Pats server.
 
+        json example:
+            {
+                "c": [
+                    {
+                        "label": "a_label",
+                        "latitude": 12.3456789,
+                        "longitude": 9.8765432,
+                        "post_id": 21,
+                        "row_id": 42,
+                        "system_id": 123
+                    },
+                ],
+                 "trapeye": [
+                    {
+                        "latitude": 98.76543210987654,
+                        "longitude": 1.2345678901234,
+                        "post_id": 42,
+                        "row_id": 21,
+                        "unit_id": 9876
+                    },
+                ]
+            }
+
         Args:
             section_id (int, optional): the id of the section for which the spots will be downloaded.
             map_snapping(bool, optional): flag to turn on map snapping on the hand placed location of sensors. Defaults to True.
@@ -198,6 +221,90 @@ class PatsService:
         average_24h_bin: bool = False,
     ):
         """Method used to download counts from the Pats server.
+        The datetime format received from the pats server is: "%Y%m%d_%H%M%S"
+
+        Note that the in the trapeye measurements, the first absolute count has NaN values in the diff rows.
+        This is because the differnce is the differnce between the previous absolute count, and the new one. If there is not
+        a previous absolute count NaN will be returned.
+        The same explanation for new counts. This gets calculated with the diff between two absolute counts.
+
+        json example:
+            {
+                "c": [
+                    {
+                        "counts": [
+                            {
+                                "1": 0,
+                                "2": 0,
+                                "datetime": "20240708_120000"
+                            },
+                            {
+                                "1": 0,
+                                "2": 0,
+                                "datetime": "20240708_130000"
+                            },
+                        ],
+                        "post_id": 21,
+                        "row_id": 42
+                    }
+            ],
+                "trapeye": [
+                    {
+                        "absolute_count": [
+                            {
+                                "24": 1.0,
+                                "25": 0.0,
+                                "26": 0.0,
+                                "27": 0.0,
+                                "28": 8.0,
+                                "3": 0.0,
+                                "date": "20240709",
+                                "lir_diff": NaN,
+                                "mr_diff": NaN,
+                                "nc_diff": NaN,
+                                "ta_diff": NaN,
+                                "tr_diff": NaN,
+                                "wv_diff": NaN
+                            },
+                            {
+                                "24": 1.0,
+                                "25": 0.0,
+                                "26": 0.0,
+                                "27": 0.0,
+                                "28": 8.0,
+                                "3": 0.0,
+                                "date": "20240711",
+                                "lir_diff": 0.0,
+                                "mr_diff": 0.0,
+                                "nc_diff": 0.0,
+                                "ta_diff": 0.0,
+                                "tr_diff": 0.0,
+                                "wv_diff": 0.0
+                            },
+                        ],
+                        "new_counts": [
+                            {
+                                "24": NaN,
+                                "25": NaN,
+                                "26": NaN,
+                                "27": NaN,
+                                "28": NaN,
+                                "3": NaN,
+                                "date": "20240709"
+                            },
+                            {
+                                "24": 0.0,
+                                "25": 0.0,
+                                "26": 0.0,
+                                "27": 0.0,
+                                "28": 0.0,
+                                "3": 0.0,
+                                "date": "20240711"
+                            },
+                        ],
+                        "post_id": 2,
+                        "row_id": 34
+                    },
 
         Args:
             start_date (datetime): start date from which the downloaded counts will start.
