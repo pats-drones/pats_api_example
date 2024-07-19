@@ -60,6 +60,18 @@ class PatsService:
         self.logger.info(f"Successfully retrieved API token from server: {self.server}")
         return response.json()["access_token"]
 
+    def __convert_bool_to_int(self, boolean_value: bool) -> int:
+        """Private method, converts a boolean value to a int.
+        True gets converted to 1, False gets converted to 0.
+
+        Args:
+            boolean_value (bool): boolean value to be converted to int.
+
+        Returns:
+            int: integer value corresponding to the provided boolean value.
+        """
+        return 1 if boolean_value is True else 0
+
     def download_detection_classes(self) -> dict:
         """Download detection classes from pats server.
         Detection classes are insects (and rats, birds, ect.) from pats.
@@ -197,7 +209,7 @@ class PatsService:
         self.logger.debug("Downloading spots from pats server")
 
         # Convert boolean to int.
-        map_snapping_num: int = int(map_snapping == True)
+        map_snapping_num: int = self.__convert_bool_to_int(map_snapping)
 
         # Initialize header and request body.
         headers = {"Authorization": "Bearer " + self.token}
@@ -328,7 +340,7 @@ class PatsService:
         start_date_formatted: str = start_date.strftime('%Y%m%d')
         end_date_formatted: str = end_date.strftime('%Y%m%d')
         detection_class_ids_str: str | None = ",".join(map(str, detection_class_ids)) if detection_class_ids else None
-        average_24h_bin_num: int = int(average_24h_bin == True)
+        average_24h_bin_num: int = self.__convert_bool_to_int(average_24h_bin)
 
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
@@ -601,5 +613,39 @@ class PatsService:
             )
             sys.exit(1)
 
-        self.logger.info("Successfully downloaded c flight track")
+        self.logger.info(f"Successfully downloaded c flight track from: {detection_uid}")
         return pd.DataFrame.from_records(response.json()["data"])
+
+    def download_c_video(self, section_id: int, detection_uid: int, raw_stereo: bool = False) -> bytes:
+        """Download c video from pats.
+
+        Args:
+            section_id (int): the id of the section where the detection was done.
+            detection_uid (int): the unique id of a detection from which the video will be downloaded.
+            raw_stereo (bool, optional): flag to enable requesting the raw stereo. Defaults to False.
+
+        Returns:
+            bytes: the requested video.
+        """
+        self.logger.debug("Retrieving c video from pats")
+        raw_stereo_num: int = self.__convert_bool_to_int(raw_stereo)
+
+        # Initialize the header and request body.
+        headers = {"Authorization": "Bearer " + self.token}
+        params = {
+            'section_id': str(section_id),
+            'detection_uid': str(detection_uid),
+            'raw_stereo': str(raw_stereo_num)
+        }
+
+        # Send request, and validate response code.
+        response = requests.get(self.server + "/api/download_c_video", headers=headers, params=params, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(
+                f"Download c video failed: {response.status_code}, msg: {response.text}",
+                exc_info=True,
+            )
+            sys.exit(1)
+
+        self.logger.info(f"Successfully downloaded c video from detection: {detection_uid}")
+        return response.content
