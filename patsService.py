@@ -5,10 +5,6 @@ import requests
 
 
 class PatsService:
-    """
-    This class functions as an interface to the PatsApi.
-    """
-
     def __init__(
         self,
         user: str,
@@ -47,8 +43,9 @@ class PatsService:
 
         # Initialize header.
         request_body = {"username": user, "password": passw}
-        response = requests.post(server + "/token", request_body, timeout=3.0)
 
+        # Send request, and validate response code.
+        response = requests.post(server + "/token", request_body, timeout=self.timeout)
         if response.status_code != 200:
             self.logger.critical(
                 f"Retrieving token from server failed: {str(response.status_code)}, msg: {response.text}",
@@ -63,10 +60,6 @@ class PatsService:
         """Download detection classes from pats server.
         Detection classes are insects (and rats, birds, ect.) from pats.
         Via the "sections" endpoint you can find out which are actually available.
-
-        Returns:
-            (dict): dict containing all detection classes in json format.
-                    An example of the format can be found below.
 
         json example:
             {
@@ -85,19 +78,84 @@ class PatsService:
                     }
                 }
             }
+
+        Returns:
+            dict: dict containing all detection classes in json format.
+                    An example of the format can be found above.
+
         """
         self.logger.debug("Retrieving detection classes from pats server")
 
         # Initialize headers.
         headers = {'Authorization': 'Bearer ' + self.token}
 
-        response = requests.get(self.server + 'api/detection_classes', headers=headers, timeout=self.timeout)
+        # Send request, and validate response code.
+        response = requests.get(self.server + '/api/detection_classes', headers=headers, timeout=self.timeout)
         if response.status_code != 200:
             self.logger.critical(f"Download detection classes failed: {str(response.status_code)}, msg: {response.text}")
             sys.exit(1)
 
         self.logger.info("Sucessfully retrieved detection classes from pats server")
         return response.json()['detection_classes']
+
+    def download_sections(self) -> dict:
+        """Download sections from pats server.
+        Sections contain a lot of meta data.
+
+        json example:
+            {
+                "sections": [
+                    {
+                        "crop": "some_crop",
+                        "customer_name": "company_name",
+                        "detection_classes": [
+                            {
+                                "available_in_c": 0,
+                                "available_in_trapeye": 1,
+                                "bb_label": "ta",
+                                "benificial": 0,
+                                "c_level_1": 5,
+                                "c_level_2": 15,
+                                "c_level_3": 30,
+                                "c_level_4": 50,
+                                "id": 3,
+                                "label": "Tuta absoluta",
+                                "short_name": "Tomato leafminer",
+                                "trapeye_level_1": 1,
+                                "trapeye_level_2": 5,
+                                "trapeye_level_3": 10,
+                                "trapeye_level_4": 15
+                            },
+                        ],
+                        "greenhouse_name": "your_greenhouse_name",
+                        "hubspot_company_id": 0123456789,
+                        "id": 123,
+                        "label": "section_label",
+                        "n_weekly_trapeye_photos": 3,
+                        "name": "a_name",
+                        "timezone": "Europe/Amsterdam"
+                    }
+                ]
+            }
+        }
+
+        Returns:
+            dict: dict containg all sections. Each section contains meta data about it self,
+                  and a list of detection classes available to that section.
+        """
+        self.logger.debug("Retrieving sections from pats server")
+
+        # Initialize headers.
+        headers = {'Authorization': 'Bearer ' + self.token}
+
+        # Send request, and validate response code.
+        response = requests.get(self.server + '/api/detection_classes', headers=headers, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(f"Download sections failed: {str(response.status_code)}, msg: {response.text}")
+            sys.exit(1)
+
+        self.logger.info("Sucessfully sections from pats server")
+        return response.json()['sections']
 
     def download_spots(self, section_id: int, map_snapping: bool = True) -> dict:
         """Method used to download the spots from the Pats server.
@@ -107,7 +165,7 @@ class PatsService:
             map_snapping(bool, optional): flag to turn on map snapping on the hand placed location of sensors. Defaults to True.
 
         Returns:
-            (dict): a dict containing the json response body.
+            dict: a dict containing the json response body.
         """
         self.logger.debug("Downloading spots from pats server")
 
@@ -118,6 +176,7 @@ class PatsService:
         headers = {"Authorization": "Bearer " + self.token}
         params = {"section_id": str(section_id), "map_snapping": map_snapping_num}
 
+        # Send request, and validate response code.
         response = requests.get(self.server + "/api/spots", headers=headers, params=params, timeout=self.timeout)
         if response.status_code != 200:
             self.logger.critical(
@@ -150,7 +209,7 @@ class PatsService:
                                               the selected date range or not. Defaults to False.
 
         Returns:
-            (dict): response body containing the counts in json format.
+            dict: response body containing the counts in json format.
         """
         self.logger.debug("Retrieving counts from pats server")
         # Make sure all provided parameters are in the right format, and are the right type.
@@ -171,6 +230,7 @@ class PatsService:
             "average_24h_bin": average_24h_bin_num,
         }
 
+        # Send request, and validate response code.
         response = requests.get(self.server + "/api/counts", headers=headers, params=params, timeout=self.timeout)
         if response.status_code != 200:
             self.logger.critical(
