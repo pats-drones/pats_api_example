@@ -1,4 +1,6 @@
 from datetime import datetime
+from PIL import Image
+from io import BytesIO
 import sys
 import logging
 import requests
@@ -221,7 +223,7 @@ class PatsService:
         average_24h_bin: bool = False,
     ):
         """Method used to download counts from the Pats server.
-        The datetime format received from the pats server is: "%Y%m%d_%H%M%S"
+        The datetime format received from the pats server is: "%Y%m%d_%H%M%S".
 
         Note that the in the trapeye measurements, the first absolute count has NaN values in the diff rows.
         This is because the differnce is the differnce between the previous absolute count, and the new one. If there is not
@@ -348,3 +350,91 @@ class PatsService:
 
         self.logger.info("Successfully retrieved counts from pats servers")
         return response.json()
+
+    def download_trapeye_photo_list(self,
+                                    section_id: int,
+                                    row_id: int,
+                                    post_id: int,
+                                    start_date: datetime,
+                                    end_date: datetime) -> list:
+        """Download the list with available photos from the trapeye.
+
+        json example:
+            {
+                "photos": [
+                    "20240713_140300",
+                    "20240713_120300",
+                    "20240711_140300",
+                    "20240711_120500",
+                    "20240709_140200",
+                ]
+            }
+
+        Args:
+            section_id (int): the id of the section where the photos were taken.
+            row_id (int): the row id of the sensor that took the photos.
+            post_id (int): the post id of the sensor that took the photos.
+            start_date (datetime): the earliest date of the returned photos.
+            end_date (datetime): the latest date of the returned photos.
+
+        Returns:
+            list: list with names of the available photos. Names are in the format "%Y%m%d_%H%M%S".
+        """
+        self.logger.debug("Downloading trayepe photo list")
+        start_date_formatted: str = start_date.strftime("%Y%m%d")
+        end_date_formatted: str = end_date.strftime("%Y%m%d")
+
+        # Initialize the header and request body
+        headers = {"Authorization": "Bearer " + self.token}
+        params = {
+            'section_id': str(section_id),
+            'row_id': str(row_id),
+            'post_id': str(post_id),
+            'start_date': start_date_formatted,
+            'end_date': end_date_formatted,
+        }
+
+        # Send request, and validate response code.
+        response = requests.get(self.server + "/api/trapeye_photo_list", headers=headers, params=params, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(
+                f"Download photo list failed: {response.status_code}, msg: {response.text}",
+                exc_info=True,
+            )
+            sys.exit(1)
+
+        self.logger.info("Successfully downloaded photo list from pats server")
+        return response.json()["photos"]
+
+    def download_trapeye_photo(self, section_id: int, row_id: int, post_id: int, photo_id: str) -> Image.Image:
+        """Download a trapeye photo from pats.
+
+        Args:
+            section_id (int): the section in which the photo was taken.
+            row_id (int): the id of the row the sensor that took the photo is located.
+            post_id (int): the id of the post the sensore that took the photo is located.
+            photo_id (str): the name of the photo, found in the photo list.
+
+        Returns:
+            Image.Image: the downloaded image.
+        """
+        self.logger.debug(f"Downloading trayepe photo: {photo_id}")
+        # Initialize the header and request body
+        headers = {"Authorization": "Bearer " + self.token}
+        params = {
+            'section_id': str(section_id),
+            'row_id': str(row_id),
+            'post_id': str(post_id),
+            'datetime': photo_id,
+        }
+
+        # Send request, and validate response code.
+        response = requests.get(self.server + "/api/download_trapeye_photo", headers=headers, params=params, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(
+                f"Download photo failed: {response.status_code}, msg: {response.text}",
+                exc_info=True,
+            )
+            sys.exit(1)
+
+        return Image.open(BytesIO(response.content))
