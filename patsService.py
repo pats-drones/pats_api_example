@@ -1,0 +1,183 @@
+from datetime import datetime
+import sys
+import logging
+import requests
+
+
+class PatsService:
+    """
+    This class functions as an interface to the PatsApi.
+    """
+
+    def __init__(
+        self,
+        user: str,
+        passw: str,
+        server: str = "https://beta.pats-c.com",
+        timeout: int = 3,
+    ):
+        """Constructor method for the "PatsService" class.
+        Takes care of retrieving the access_token.
+
+        Args:
+            user (str): username of the account from where we are retrieving information.
+            passw (str): password of the account from where we are retrieving information.
+            server (str, optional): URL to the server. Defaults to "https://beta.pats-c.com".
+            timeout(int, optional): number of seconds before any requests made to the server will timout.
+        """
+        self.logger = logging.getLogger(name="log")
+        self.server: str = server
+        self.timeout: int = timeout
+        self.token: str = self.__retrieve_token_from_server(user, passw, server)
+
+    def __retrieve_token_from_server(self, user: str, passw: str, server: str) -> str:
+        """Private method to retrieve api token from server.
+        If retrieving the token fails, the program exits with exit code 1.
+        As there is no way to gracefully recover.
+
+        Args:
+            user (str): username of the account from which the token is to be retrieved.
+            passw (str): password of the account from which the token is to be retrieved.
+            server (str): the url to the server.
+
+        Returns:
+            str: the access token, that can be used for GET requests.
+        """
+        self.logger.debug("Retrieving token from pats server")
+
+        # Initialize header.
+        request_body = {"username": user, "password": passw}
+        response = requests.post(server + "/token", request_body, timeout=3.0)
+
+        if response.status_code != 200:
+            self.logger.critical(
+                f"Retrieving token from server failed: {str(response.status_code)}, msg: {response.text}",
+                exc_info=True,
+            )
+            sys.exit(1)
+
+        self.logger.info(f"Successfully retrieved API token from server: {self.server}")
+        return response.json()["access_token"]
+
+    def download_detection_classes(self) -> dict:
+        """Download detection classes from pats server.
+        Detection classes are insects (and rats, birds, ect.) from pats.
+        Via the "sections" endpoint you can find out which are actually available.
+
+        Returns:
+            (dict): dict containing all detection classes in json format.
+                    An example of the format can be found below.
+
+        json example:
+            {
+                "detection_classes": {
+                    "1": {
+                        "bb_label": null,
+                        "id": 1,
+                        "label": "Chrysodeixis chalcites",
+                        "short_name": "Tomato looper / Turkse mot"
+                    },
+                    "2": {
+                        "bb_label": "ta",
+                        "id": 3,
+                        "label": "Tuta absoluta",
+                        "short_name": "Tomato leafminer"
+                    }
+                }
+            }
+        """
+        self.logger.debug("Retrieving detection classes from pats server")
+
+        # Initialize headers.
+        headers = {'Authorization': 'Bearer ' + self.token}
+
+        response = requests.get(self.server + 'api/detection_classes', headers=headers, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(f"Download detection classes failed: {str(response.status_code)}, msg: {response.text}")
+            sys.exit(1)
+
+        self.logger.info("Sucessfully retrieved detection classes from pats server")
+        return response.json()['detection_classes']
+
+    def download_spots(self, section_id: int, map_snapping: bool = True) -> dict:
+        """Method used to download the spots from the Pats server.
+
+        Args:
+            section_id (int, optional): the id of the section for which the spots will be downloaded.
+            map_snapping(bool, optional): flag to turn on map snapping on the hand placed location of sensors. Defaults to True.
+
+        Returns:
+            (dict): a dict containing the json response body.
+        """
+        self.logger.debug("Downloading spots from pats server")
+
+        # Convert boolean to int.
+        map_snapping_num: int = int(map_snapping == True)
+
+        # Initialize header and request body.
+        headers = {"Authorization": "Bearer " + self.token}
+        params = {"section_id": str(section_id), "map_snapping": map_snapping_num}
+
+        response = requests.get(self.server + "/api/spots", headers=headers, params=params, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(
+                f"Download spots failed: {response.status_code}, msg: {response.text}",
+                exc_info=True,
+            )
+            sys.exit(1)
+
+        self.logger.info("Successfully retrieved spots from pats servers")
+        return response.json()
+
+    def download_counts(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        section_id: int,
+        detection_class_ids: list[int],
+        bin_mode: str = "D",
+        average_24h_bin: bool = False,
+    ):
+        """Method used to download counts from the Pats server.
+
+        Args:
+            start_date (datetime): start date from which the downloaded counts will start.
+            end_date (datetime): end date to which counts will be downloaded.
+            section_id (int, optional): id of the section for which counts will be downloaded.
+            detection_class_ids (list[int], optional): list of insect ids, for which counts will be downloaded.
+            bin_mode (str, optional): EITHER 'D' OR 'H'!! corresponds to daily or hourly binning respectively . Defaults to "D".
+            average_24h_bin (bool, optional): boolean flag, whether to include daily insect distribution within
+                                              the selected date range or not. Defaults to False.
+
+        Returns:
+            (dict): response body containing the counts in json format.
+        """
+        self.logger.debug("Retrieving counts from pats server")
+        # Make sure all provided parameters are in the right format, and are the right type.
+        section_id_str: str = str(section_id)
+        start_date_formatted: str = start_date.strftime('%Y%m%d')
+        end_date_formatted: str = end_date.strftime('%Y%m%d')
+        detection_class_ids_str: str | None = ",".join(map(str, detection_class_ids)) if detection_class_ids else None
+        average_24h_bin_num: int = int(average_24h_bin == True)
+
+        # Initialize the header and request body
+        headers = {"Authorization": "Bearer " + self.token}
+        params = {
+            "section_id": section_id_str,
+            "start_date": start_date_formatted,
+            "end_date": end_date_formatted,
+            "detection_class_ids": detection_class_ids_str,
+            "bin_mode": bin_mode,
+            "average_24h_bin": average_24h_bin_num,
+        }
+
+        response = requests.get(self.server + "/api/counts", headers=headers, params=params, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(
+                f"Download counts failed: {response.status_code}, msg: {response.text}",
+                exc_info=True,
+            )
+            sys.exit(1)
+
+        self.logger.info("Successfully retrieved counts from pats servers")
+        return response.json()
