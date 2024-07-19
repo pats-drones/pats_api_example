@@ -175,6 +175,8 @@ class PatsService:
 
     def download_spots(self, section_id: int, map_snapping: bool = True) -> dict:
         """Method used to download the spots from the Pats server.
+        The json consists of two dictionaries, the first containing the spots for c systems,
+        and the second containing spots for trapeye systems.
 
         json example:
             {

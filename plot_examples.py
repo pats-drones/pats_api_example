@@ -19,7 +19,7 @@ class ExamplePlots():
             label += section['name']
         return label.strip()
 
-    def example_c_binned_per_day_plot(self, counts: dict, section: dict, insect_table: dict) -> None:
+    def c_binned_per_day_plot(self, counts: dict, section: dict, insect_table: dict) -> None:
         """Plot an example plot with counts binned per day.
 
         Args:
@@ -61,7 +61,7 @@ class ExamplePlots():
             plt.ylabel('Insect flights')
             plt.legend()
 
-    def example_c_24h_distribution_plot(self, counts: dict, section: dict, insect_table: dict) -> None:
+    def c_24h_distribution_plot(self, counts: dict, section: dict, insect_table: dict) -> None:
         """Plot an example plot of the 24h distribution of counts.
 
         Args:
@@ -96,7 +96,7 @@ class ExamplePlots():
             plt.ylabel('Insect flights')
             plt.legend()
 
-    def example_trapeye_plot(self, counts: dict, section: dict, insect_table: dict) -> None:
+    def trapeye_plot(self, counts: dict, section: dict, insect_table: dict) -> None:
         """Plot and example figure from a trapeye.
         In contrast to the example plots from the c sensors, here we will only show one example plot.
         The plot corresponds to the 0th trap eye sensor.
@@ -132,7 +132,7 @@ class ExamplePlots():
         plt.ylabel('Insects fresh on the card')
         plt.legend()
 
-    def example_c_scatter_plot(self, detections_df: pd.DataFrame, insect_class: dict) -> None:
+    def c_scatter_plot(self, detections_df: pd.DataFrame, insect_class: dict) -> None:
         """Plot an example figure of a scatter plot from detections.
 
         Args:
@@ -149,7 +149,7 @@ class ExamplePlots():
         plt.ylabel('Size [m]')
         plt.grid(True)
 
-    def example_c_flight_3d_plot(self, flight_df: pd.DataFrame) -> None:
+    def c_flight_3d_plot(self, flight_df: pd.DataFrame) -> None:
         """Plot an example 3d plot of a flight track.
 
         Args:
