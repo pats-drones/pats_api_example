@@ -1,6 +1,8 @@
 from datetime import datetime
+from typing import Optional
 from PIL import Image
 from io import BytesIO
+import pandas as pd
 import sys
 import logging
 import requests
@@ -328,7 +330,7 @@ class PatsService:
         detection_class_ids_str: str | None = ",".join(map(str, detection_class_ids)) if detection_class_ids else None
         average_24h_bin_num: int = int(average_24h_bin == True)
 
-        # Initialize the header and request body
+        # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
         params = {
             "section_id": section_id_str,
@@ -384,7 +386,7 @@ class PatsService:
         start_date_formatted: str = start_date.strftime("%Y%m%d")
         end_date_formatted: str = end_date.strftime("%Y%m%d")
 
-        # Initialize the header and request body
+        # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
         params = {
             'section_id': str(section_id),
@@ -419,7 +421,7 @@ class PatsService:
             Image.Image: the downloaded image.
         """
         self.logger.debug(f"Downloading trayepe photo: {photo_id}")
-        # Initialize the header and request body
+        # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
         params = {
             'section_id': str(section_id),
@@ -438,3 +440,92 @@ class PatsService:
             sys.exit(1)
 
         return Image.open(BytesIO(response.content))
+
+    def download_c_detection_features(self,
+                                      section_id: int,
+                                      row_id: Optional[int],
+                                      post_id: Optional[int],
+                                      system_id: Optional[int],
+                                      detection_class_id: int,
+                                      start_date: datetime,
+                                      end_date: datetime) -> pd.DataFrame:
+        """Download c detection features from pats.
+        The row_id, post_id and system_id are optional, this is to ensure backwards compatibility.
+        The system_id's are legacy, and should be avoided. New behaviour is the combination of row_id and post_id.
+
+        The datetime in the response body is in the format "%Y%m%d_%H%M%S".
+        All units are in SI base units.
+
+        json example:
+            {
+                "data": [
+                    {
+                        "datetime": "20240708_222545",
+                        "dist_traject": 3.3145574200059627,
+                        "dist_traveled": 3.0434154152926607,
+                        "duration": 2.5037559999998393,
+                        "light_level": 0.22657637142857143,
+                        "post_id": 21,
+                        "row_id": 43,
+                        "size": 0.014341787433628319,
+                        "start_datetime": "Mon, 08 Jul 2024 20:25:45 GMT",
+                        "uid": 012345678,
+                        "vel_max": 1.7198010272426867,
+                        "vel_mean": 1.2854506213467454,
+                        "vel_std": 0.2336045734746302
+                    },
+                ]
+            }
+
+        Args:
+            section_id (int): the id of the section where this c sensor is located.
+            row_id (Optional[int]): the id of the row the sensor is located.
+            post_id (Optional[int]): the id of the post the sensor is located.
+            system_id (Optional[int]): deprecated! the id of the system that took the measurements.
+            detection_class_id (int): the id of the detection class, these ids can be found via the "download_detection_classes" endpoint.
+            start_date (datetime): the start date of the measurements, date of the earliest measurement.
+            end_date (datetime): the end date of the measurements, date of the latest measurment.
+
+        Returns:
+            pd.DataFrame: _description_
+        """
+        self.logger.debug("Retrieving c detection features")
+        # Format the start and end date.
+        start_date_formatted: str = start_date.strftime('%Y%m%d_%H%M%S')
+        end_date_formatted: str = end_date.strftime('%Y%m%d_%H%M%S')
+
+        # Initialize the header and request body.
+        headers = {"Authorization": "Bearer " + self.token}
+        params = {}
+
+        # system_id is legacy code, this if statement is to ensure backward compatibility.
+        # The prefered body is the one with a row and post id.
+        if system_id is None:
+            params = {
+                'section_id': str(section_id),
+                'row_id': str(row_id),
+                'post_id': str(post_id),
+                'detection_class_id': str(detection_class_id),
+                'start_datetime': start_date_formatted,
+                'end_datetime': end_date_formatted,
+            }
+        else:
+            params = {
+                'section_id': str(section_id),
+                'system_id': str(system_id),
+                'detection_class_id': str(detection_class_id),
+                'start_datetime': start_date_formatted,
+                'end_datetime': end_date_formatted,
+            }
+
+        # Send request, and validate response code.
+        response = requests.get(self.server + "/api/download_detection_features", headers=headers, params=params, timeout=self.timeout)
+        if response.status_code != 200:
+            self.logger.critical(
+                f"Download c detection features failed: {response.status_code}, msg: {response.text}",
+                exc_info=True,
+            )
+            sys.exit(1)
+
+        self.logger.info("Successfullly downloaded c detection features")
+        return pd.DataFrame.from_records(response.json()["data"])
