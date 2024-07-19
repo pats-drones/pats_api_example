@@ -156,7 +156,7 @@ class PatsService:
         }
 
         Returns:
-            dict: dict containg all sections. Each section contains meta data about it self,
+            dict: dict containing all sections. Each section contains meta data about it self,
                   and a list of detection classes available to that section.
         """
         self.logger.debug("Retrieving sections from pats server")
@@ -165,12 +165,12 @@ class PatsService:
         headers = {'Authorization': 'Bearer ' + self.token}
 
         # Send request, and validate response code.
-        response = requests.get(self.server + '/api/detection_classes', headers=headers, timeout=self.timeout)
+        response = requests.get(self.server + '/api/sections', headers=headers, timeout=self.timeout)
         if response.status_code != 200:
             self.logger.critical(f"Download sections failed: {str(response.status_code)}, msg: {response.text}")
             sys.exit(1)
 
-        self.logger.info("Sucessfully sections from pats server")
+        self.logger.info("Successfully sections from pats server")
         return response.json()['sections']
 
     def download_spots(self, section_id: int, map_snapping: bool = True) -> dict:
@@ -242,7 +242,7 @@ class PatsService:
         The datetime format received from the pats server is: "%Y%m%d_%H%M%S".
 
         Note that the in the trapeye measurements, the first absolute count has NaN values in the diff rows.
-        This is because the differnce is the differnce between the previous absolute count, and the new one. If there is not
+        This is because the difference is the difference between the previous absolute count, and the new one. If there is not
         a previous absolute count NaN will be returned.
         The same explanation for new counts. This gets calculated with the diff between two absolute counts.
 
@@ -396,7 +396,7 @@ class PatsService:
         Returns:
             list: list with names of the available photos. Names are in the format "%Y%m%d_%H%M%S".
         """
-        self.logger.debug("Downloading trayepe photo list")
+        self.logger.debug("Downloading trapeye photo list")
         start_date_formatted: str = start_date.strftime("%Y%m%d")
         end_date_formatted: str = end_date.strftime("%Y%m%d")
 
