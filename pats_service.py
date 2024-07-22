@@ -423,18 +423,18 @@ class PatsService:
         return response.json()["photos"]
 
     def download_trapeye_photo(self, section_id: int, row_id: int, post_id: int, photo_id: str) -> Image.Image:
-        """Download a trapeye photo from pats.
+        """Download a trapeye photo from pats, and open it.
 
         Args:
             section_id (int): the section in which the photo was taken.
             row_id (int): the id of the row the sensor that took the photo is located.
-            post_id (int): the id of the post the sensore that took the photo is located.
+            post_id (int): the id of the post the sensor that took the photo is located.
             photo_id (str): the name of the photo, found in the photo list.
 
         Returns:
             Image.Image: the downloaded image.
         """
-        self.logger.debug(f"Downloading trayepe photo: {photo_id}")
+        self.logger.debug(f"Downloading trapeye photo: {photo_id}")
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
         params = {
@@ -465,7 +465,7 @@ class PatsService:
                                       end_date: datetime) -> pd.DataFrame:
         """Download c detection features from pats.
         The row_id, post_id and system_id are optional, this is to ensure backwards compatibility.
-        The system_id's are legacy, and should be avoided. New behaviour is the combination of row_id and post_id.
+        The system_id's are legacy, and should be avoided. New behavior is the combination of row_id and post_id.
 
         The datetime in the response body is in the format "%Y%m%d_%H%M%S".
         All units are in SI base units.
@@ -498,7 +498,7 @@ class PatsService:
             system_id (Optional[int]): deprecated! the id of the system that took the measurements.
             detection_class_id (int): the id of the detection class, these ids can be found via the "download_detection_classes" endpoint.
             start_date (datetime): the start date of the measurements, date of the earliest measurement.
-            end_date (datetime): the end date of the measurements, date of the latest measurment.
+            end_date (datetime): the end date of the measurements, date of the latest measurement.
 
         Returns:
             pd.DataFrame: pandas dataframe containing the information contained in data.
@@ -513,7 +513,7 @@ class PatsService:
         params = {}
 
         # system_id is legacy code, this if statement is to ensure backward compatibility.
-        # The prefered body is the one with a row and post id.
+        # The preferred body is the one with a row and post id.
         if system_id is None:
             params = {
                 'section_id': str(section_id),
@@ -541,13 +541,13 @@ class PatsService:
             )
             sys.exit(1)
 
-        self.logger.info("Successfullly downloaded c detection features")
+        self.logger.info("Successfully downloaded c detection features")
         return pd.DataFrame.from_records(response.json()["data"])
 
     def download_c_flight_track(self, section_id: int, detection_uid: int) -> pd.DataFrame:
         """Download c flight track from pats server.
 
-        All units are in SI standart base units.
+        All units are in SI standard base units.
 
         json example:
             {
@@ -596,7 +596,7 @@ class PatsService:
             detection_uid (int): the unique id of the detection.
 
         Returns:
-            pd.DataFrame: pandas dataframe containing the informatin contained in data.
+            pd.DataFrame: pandas dataframe containing the information contained in data.
         """
         self.logger.debug("Retrieving c flight track")
         # Initialize the header and request body.
