@@ -111,7 +111,7 @@ class PatsService:
             self.logger.critical(f"Download detection classes failed: {str(response.status_code)}, msg: {response.text}")
             sys.exit(1)
 
-        self.logger.info("Sucessfully retrieved detection classes from pats server")
+        self.logger.info("Successfully retrieved detection classes from pats server")
         return response.json()['detection_classes']
 
     def download_sections(self) -> dict:
