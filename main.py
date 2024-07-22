@@ -76,7 +76,7 @@ if __name__ == "__main__":
         example_plots.trapeye_plot(counts, example_section, insect_table)
 
     # up to this point Trap-Eye and PATS-C data is virtually the same.
-    # However when we go lower TrapEye periodically photographes a bulk and PATS-C stereo-video records individuals.
+    # However when we go lower TrapEye periodically photographs a bulk and PATS-C stereo-video records individuals.
     # Thus we will split them up, lets start with an image from a Trap-Eye!
     some_row_id = None
     some_post_id = None

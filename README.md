@@ -7,9 +7,10 @@ Word of warning: the code in this repository is meant to show how the endpoints 
 ## Table of contents
 
 1. [Getting started guide](#getting-started-guide)
-2. [POST endpoints](#post)
+2. [Logging](#logging)
+3. [POST endpoints](#post)
     - [Token](#1-servertoken)
-3. [GET endpoints](#get)
+4. [GET endpoints](#get)
     - [Header](#header)
     - [Detection classes](#1-serverapidownload_detection_classes)
     - [Sections](#2-serverapisections)
@@ -31,6 +32,10 @@ below is a short step-by-step plan to get started.
     - local_testing, "http://127.0.0.1:5000/". This URL can be used for local testing, it links to localhost port 5000.
 2. Make sure the login credentials are present as environment variables. The username should be named _"pats_user"_, and the pasword should be named _"pats\_passw"_. The easiest way to add them to the environment is by adding a _".env"_ file to the root directory of the project.
 3. That is it, you are now ready to run the script!
+
+## Logging
+
+There is a basic logger present in the script. Logging is done using the [logging]("https://docs.python.org/3/library/logging.html") module. If you want to change the log level, this can be done in the `logger.py` file.
 
 ## POST
 
