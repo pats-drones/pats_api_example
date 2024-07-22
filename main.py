@@ -1,22 +1,42 @@
 from plot_examples import ExamplePlots
 from pats_service import PatsService
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 import logger
 import os
 
 logger.init_logger(logger=logger.logger)
+load_dotenv()
 
 
 def read_credentials() -> tuple[str, str]:
-    cred_file = './.auth'
-    if os.path.exists(cred_file):
-        with open(cred_file, 'r', encoding='utf-8') as creds_file:
-            user = creds_file.readline().strip()
-            passw = creds_file.readline().strip()
-            return user, passw
-    else:
-        raise FileNotFoundError('Error: Super secret .auth authorization not found')
+    """Method to retrieve the login credentials from the local environment.
+    Make sure that in the local environment the username is named as "pats_user",
+    and the password is named as "pats_passw".
+
+    They can be added to the environment by having a ".env" file in the root directory of your project.
+    And example of how the env file would look is shown below:
+
+    pats_user = "your_username"
+    pats_passw = "corresponding_password"
+
+    Raises:
+        Exception: an exception is raised when reading the username or password failed.
+
+    Returns:
+        tuple[str, str]: a tuple of strings, containing the username first, and the password second.
+    """
+    user: str | None = os.getenv("pats_user")
+    passw: str | None = os.getenv("pats_passw")
+
+    if (user is None or user == ""):
+        raise Exception("Failed to read pats_user in environment")
+
+    elif (passw is None or passw == ""):
+        raise Exception("Failed to read pats_passw in environment")
+
+    return user, passw
 
 
 if __name__ == "__main__":
