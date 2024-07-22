@@ -1,2 +1,5 @@
+.env*
 .auth*
 temp_video.mkv
+
+/__pycache__*
