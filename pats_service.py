@@ -14,7 +14,7 @@ class PatsService:
         user: str,
         passw: str,
         server: str = "https://beta.pats-c.com",
-        timeout: int = 3,
+        timeout: int = 20,
     ):
         """Constructor method for the "PatsService" class.
         Takes care of retrieving the access_token.
@@ -23,7 +23,7 @@ class PatsService:
             user (str): username of the account from where we are retrieving information.
             passw (str): password of the account from where we are retrieving information.
             server (str, optional): URL to the server. Defaults to "https://beta.pats-c.com".
-            timeout(int, optional): number of seconds before any requests made to the server will timout.
+            timeout(int, optional): number of seconds before any requests made to the server will timout. Defaults to 20 seconds.
         """
         self.logger = logging.getLogger(name="log")
         self.server: str = server

@@ -44,7 +44,7 @@ if __name__ == "__main__":
     user, passw = read_credentials()
 
     # Initialize "patsService" and "examplePlots" classes.
-    pats_service = PatsService(user=user, passw=passw, server="https://pats-c.com/", timeout=1000)
+    pats_service = PatsService(user=user, passw=passw)
     example_plots = ExamplePlots()
 
     # Retrieve the detection classes and sections from Pats servers.
