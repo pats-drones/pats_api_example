@@ -4,6 +4,23 @@ This document describes the various endpoints available in the pats RESTfullAPI,
 
 Word of warning: the code in this repository is meant to show how the endpoints can be used. There is no graceful handling of errors, when an error is raised the program will terminate with a non-zero exit code.
 
+## Table of contents
+
+1. [Getting started guide](#getting-started-guide)
+2. [POST endpoints](#post)
+    - [Token](#1-servertoken)
+3. [GET endpoints](#get)
+    - [Header](#header)
+    - [Detection classes](#1-serverapidownload_detection_classes)
+    - [Sections](#2-serverapisections)
+    - [Spot](#3-serverapispots)
+    - [Counts](#4-serverapicounts)
+    - [Trapeye photo list](#5-serverapitrapeye_photo_list)
+    - [Trapeye photo](#6-serverapidownload_trapeye_photo)
+    - [C detection features](#7-serverapidownload_detection_features)
+    - [C flight track](#8-serverapidownload_c_flight_track)
+    - [C video](#9-serverapidownload_c_video)
+
 ## Getting started guide
 
 below is a short step-by-step plan to get started.
