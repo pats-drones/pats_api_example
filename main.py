@@ -44,7 +44,7 @@ if __name__ == "__main__":
     user, passw = read_credentials()
 
     # Initialize "patsService" and "examplePlots" classes.
-    pats_service = PatsService(user=user, passw=passw)
+    pats_service = PatsService(user=user, passw=passw, server="https://pats-c.com/")
     example_plots = ExamplePlots()
 
     # Retrieve the detection classes and sections from Pats servers.
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # for the selected insect(s), for the selected date range.
     today = datetime.today()
     past_date = datetime.today() - timedelta(days=31)
-    counts = pats_service.download_counts(start_date=today, end_date=past_date, section_id=example_section, detection_class_ids=available_insect_ids)
+    counts = pats_service.download_counts(start_date=today, end_date=past_date, section_id=example_section["id"], detection_class_ids=available_insect_ids)
 
     # If there are "c" counts in the received counts. Then show some example plots from them.
     if len(counts['c']):
