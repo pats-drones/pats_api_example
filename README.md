@@ -2,6 +2,18 @@
 
 This document describes the various endpoints available in the pats RESTfullAPI, their purposes, request parameters, and expected responses.
 
+## Get started guide
+
+below is a short step-by-step plan to get started.
+
+1. Choose the server you want to use, the server url is provided as an argument to the `PatsService` class, and can be one of three servers.
+    - beta_server, "https://beta.pats-c.com/". This is the default and links to the development server from pats, this server is not always in sync with production.
+    - main_server, "https://pats-c.com/". This is the link to the main server of pats, this is used in production. When you are ready to deploy this server is recommended.
+    - local_testing, "http://127.0.0.1:5000/". This URL can be used for local testing, it links to localhost port 5000.
+2. Make sure the login credentials are present as environment variables. The username should be named _"pats_user"_, and the pasword should be named _"pats\_passw"_. The easiest way to add them to the environment is by adding a _".env"_ file to the root directory of the project.
+3. That is it, you are now ready to run the script!
+
+
 ## POST
 
 ### 1. ${server}/token
