@@ -2,7 +2,9 @@
 
 This document describes the various endpoints available in the pats RESTfullAPI, their purposes, request parameters, and expected responses.
 
-## Get started guide
+Word of warning: the code in this repository is meant to show how the endpoints can be used. There is no graceful handling of errors, when an error is raised the program will terminate with a non-zero exit code.
+
+## Getting started guide
 
 below is a short step-by-step plan to get started.
 
@@ -12,7 +14,6 @@ below is a short step-by-step plan to get started.
     - local_testing, "http://127.0.0.1:5000/". This URL can be used for local testing, it links to localhost port 5000.
 2. Make sure the login credentials are present as environment variables. The username should be named _"pats_user"_, and the pasword should be named _"pats\_passw"_. The easiest way to add them to the environment is by adding a _".env"_ file to the root directory of the project.
 3. That is it, you are now ready to run the script!
-
 
 ## POST
 
@@ -209,10 +210,10 @@ The counts endpoint is used to download counts from the pats servers. Counts are
 
 The request body can be found below. Some notes:
 
-- `average_24h_bin` is a boolean flag represented as an int. When `average_24h_bin` is set to 1, you will also retrieve information about the number of detections on different hours of the day.
+- `average_24h_bin` (**OPTIONAL**, defaults to 0) is a boolean flag represented as an int. When `average_24h_bin` is set to 1, you will also retrieve information about the number of detections on different hours of the day.
 - `start_date` and `end_date` are string representing dates. The format should be: _%Y%m%d"_.
-- `detection_class_ids` is a list of insect ids in the form of a string. The format should be _"insectId1,insectId2,insectId3..."_.
-- `bin_mode` is a string and should either be `D` or `H`. Which stand for daily or hourly binning respectively.
+- `detection_class_ids` (**OPTIONAL**, defaults to None)is a list of insect ids in the form of a string. The format should be _"insectId1,insectId2,insectId3..."_.
+- `bin_mode`(**OPTIONAL**, defaults to "D") is a string and should either be `D` or `H`. Which stand for daily or hourly binning respectively.
 
 ```JSON
 {
@@ -560,7 +561,7 @@ Endpoint used to download the video of a specific detection from a pats-c sensor
 
 #### Request body c video
 
-The request body can be found below. The `section_id` and the `detection_uid` are used to uniquely identify the detection. The `section_id` represents the section where the pats-c sensor that made the detection is located, and the `detection_uid` is the unique id of the detection made. `raw_stereo` is a boolean flag that can be used to request the raw stereo from the detection. Even though it is a boolean flag, it should be a string that is either "0", or "1". Here 1 is True, and 0 corresponds to False.
+The request body can be found below. The `section_id` and the `detection_uid` are used to uniquely identify the detection. The `section_id` represents the section where the pats-c sensor that made the detection is located, and the `detection_uid` is the unique id of the detection made. `raw_stereo` (**OPTIONAL**, defaults to "0"), is a boolean flag that can be used to request the raw stereo from the detection. Even though it is a boolean flag, it should be a string that is either "0", or "1". Here 1 is True, and 0 corresponds to False.
 
 ```JSON
 {
@@ -573,14 +574,3 @@ The request body can be found below. The `section_id` and the `detection_uid` ar
 #### Response body c video
 
 The response body does not contain JSON, as the response body only contains the requested video.
-
-- different pats servers
-- warn for sys.exit(1)
-- laten weten geen fan wat ze hebben gedaan met legacy, voorstellen scheiden endpoint. en uit halen uitleg deprecated endpoint.
-- zelf beneficial updaten wanneer verander
-- missing doc about return codes, I don't know them
-- explain map snapping beter, alleen voor trapeye??
-- Don't forget to mention wich params are optionional
-- datetime and start_datetime in download detection features responde body?
-- aan hun om uitteleggen wanneer je wel en niet flight track, fotos en videos moet gebruiken
-- acc valid insect
