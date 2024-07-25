@@ -33,4 +33,10 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8",
     },
+    "cSpell.enabled": true,
+    "cSpell.words": [
+        "Biobest",
+        "trapeye",
+        "trapeye's"
+    ],
 }
