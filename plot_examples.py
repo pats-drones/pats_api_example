@@ -157,7 +157,7 @@ class ExamplePlots():
         """
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(flight_df['sposX_insect'], flight_df['sposY_insect'], flight_df['sposZ_insect'])
+        ax.scatter(-flight_df['sposX_insect'], -flight_df['sposZ_insect'], flight_df['sposY_insect'])
         plt.title('Flight track of an insect')
         ax.set_xlabel('X Position')
         ax.set_ylabel('Y Position')

@@ -460,7 +460,7 @@ The response body can be found below. It contains information about specific det
 - `duration` the duration of the detection.
 - `light_level` the light level during the detection.
 - `post_id` and `row_id` the post and row the sensor that did the detection is mounted on.
-- `size` the estimated size of the insect.
+- `size` the estimated size in meters of the insect.
 - `start_datetime`the time on which the detection took place in human readable format, information is the same as in `datetime` field.
 - `uid` the unique identifier for this detection
 - `vel_max`, `vel_mean` and `vel_std` are the max, mean and standard deviation of the velocity of the insect.
@@ -508,28 +508,28 @@ The request body can be found below. The `section_id` specifies in which section
 
 The response body for the c flight track endpoint contains a list of measurement points, all measured in a single detection. The points can be used to reconstruct the flight track during the detection. All units are again in [SI base units]("https://en.wikipedia.org/wiki/SI_base_unit"), except `light_level`. This is a value between 0 and 1 where 1 is the maximum amount of light the camera can measure.
 
-- `acc_valid_insect` ??
-- `disparity_insect` ??
-- `elapsed` time elapsed since ??
-- `foundL_insect` ??
-- `fp` ??
-- `hunt_id` ??
-- `imLx_insect` and `imLy_insect` ??
-- `imLx_pred_insect` and `imLy_pred_insect` ??
+- `acc_valid_insect` indicator whether moving averaging filter for smoothed accelerations is full
+- `disparity_insect` difference in image location of insect left and right camera view
+- `elapsed` time since creation of folder containing flightpath
+- `foundL_insect` number of insects present at this moment 
+- `fp` false positive indicator. Default values is fp_not_a_fp when no abnormalities are detected. 
+- `hunt_id` the id of the interception with drone, default to -1 if no interception has taken place
+- `imLx_insect` and `imLy_insect` center position of the insect in a rendered (non-raw stereo video)
+- `imLx_pred_insect` and `imLy_pred_insect` estimated center position (based on previous data points) of the insect in a rendered video
 - `light_level` the light level during this measurement, this is a value between 0 and 1 where 1 corresponds to the maximum light level the camera can measure.
-- `motion_sum_insect` ??
+- `motion_sum_insect`  sum of all pixel values in blob of motion image
 - `n_frames_lost_insect` number of frames in a row the camera lost track of the insect. When this reaches 20 frames the detection ends.
 - `n_frames_tracking_insect` number of frames in a row the camera is tracking the insect.
 - `posX_insect`, `posY_insect` and `posZ_insect` the position of the insect in the viewport of the camera.
-- `pos_valid_insect` ??
-- `radius_insect` ??
+- `pos_valid_insect` indicator whether moving averaging filter for smoothed positions is full
+- `radius_insect` radius of the insect in m
 - `rs_id` the id of the measurement.
-- `saccX_insect`, `saccY_insect` and `saccZ_insect` ??
-- `score_insect` ??
-- `size_insect` the estimated size of the insect.
-- `sposX_insect`, `sposY_insect` and `sposZ_insect` ??
-- `svelX_insect`, `svelY_insect` and `svelZ_insect` ??
-- `vel_valid_insect` ??
+- `saccX_insect`, `saccY_insect` and `saccZ_insect` smoothed acceleration of the insect in the viewport of the camera. 
+- `score_insect` estimated quality of the blob
+- `size_insect` the estimated size (diameter of bounding box) of the insect in pixel values
+- `sposX_insect`, `sposY_insect` and `sposZ_insect` smoothed positions of the insect in the viewport of the camera. 
+- `svelX_insect`, `svelY_insect` and `svelZ_insect` the velocity 
+- `vel_valid_insect` indicator whether moving averaging filter for smoothed velocities is full
 
 Response body:
 
