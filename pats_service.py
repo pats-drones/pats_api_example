@@ -60,18 +60,6 @@ class PatsService:
         self.logger.info(f"Successfully retrieved API token from server: {self.server}")
         return response.json()["access_token"]
 
-    def __convert_bool_to_int(self, boolean_value: bool) -> int:
-        """Private method, converts a boolean value to a int.
-        True gets converted to 1, False gets converted to 0.
-
-        Args:
-            boolean_value (bool): boolean value to be converted to int.
-
-        Returns:
-            int: integer value corresponding to the provided boolean value.
-        """
-        return 1 if boolean_value is True else 0
-
     def download_detection_classes(self) -> dict:
         """Download detection classes from pats server.
         Detection classes are insects (and rats, birds, ect.) from pats.
@@ -211,7 +199,7 @@ class PatsService:
         self.logger.debug("Downloading spots from pats server")
 
         # Convert boolean to int.
-        map_snapping_num: int = self.__convert_bool_to_int(map_snapping)
+        map_snapping_num: int = int(map_snapping)
 
         # Initialize header and request body.
         headers = {"Authorization": "Bearer " + self.token}
@@ -342,7 +330,7 @@ class PatsService:
         start_date_formatted: str = start_date.strftime('%Y%m%d')
         end_date_formatted: str = end_date.strftime('%Y%m%d')
         detection_class_ids_str: str | None = ",".join(map(str, detection_class_ids)) if detection_class_ids else None
-        average_24h_bin_num: int = self.__convert_bool_to_int(average_24h_bin)
+        average_24h_bin_num: int = int(average_24h_bin)
 
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
@@ -630,7 +618,7 @@ class PatsService:
             bytes: the requested video.
         """
         self.logger.debug("Retrieving c video from pats")
-        raw_stereo_num: int = self.__convert_bool_to_int(raw_stereo)
+        raw_stereo_num: int = int(raw_stereo)
 
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
