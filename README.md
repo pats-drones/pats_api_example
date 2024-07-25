@@ -529,7 +529,7 @@ The response body for the c flight track endpoint contains a list of measurement
 - `size_insect` the estimated size (diameter of bounding box) of the insect in pixel values
 - `sposX_insect`, `sposY_insect` and `sposZ_insect` smoothed positions of the insect in the viewport of the camera. 
 - `svelX_insect`, `svelY_insect` and `svelZ_insect` the velocity 
-- `vel_valid_insect` indicator whether moving averaging filter for smoothed velocities is full
+- `vel_valid_insect` boolean indicator whether moving averaging filter for smoothed velocities is full.
 
 Response body:
 
