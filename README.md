@@ -511,7 +511,7 @@ The response body for the c flight track endpoint contains a list of measurement
 - `acc_valid_insect` indicator whether moving averaging filter for smoothed accelerations is full
 - `disparity_insect` difference in image location of insect left and right camera view
 - `elapsed` time since creation of folder containing flightpath
-- `foundL_insect` number of insects present at this moment 
+- `foundL_insect` boolean whether an insect is found in the left view of the stereo camera
 - `fp` false positive indicator. Default values is fp_not_a_fp when no abnormalities are detected. 
 - `hunt_id` the id of the interception with drone, default to -1 if no interception has taken place
 - `imLx_insect` and `imLy_insect` center position of the insect in a rendered (non-raw stereo video)
