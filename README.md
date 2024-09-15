@@ -29,7 +29,6 @@ below is a short step-by-step plan to get started.
 1. Choose the server you want to use, the server url is provided as an argument to the `PatsService` class, and can be one of three servers.
     - beta_server, "https://beta.pats-c.com/". This is the default and links to the development server from pats, this server is not always in sync with production.
     - main_server, "https://pats-c.com/". This is the link to the main server of pats, this is used in production. When you are ready to deploy this server is recommended.
-    - local_testing, "http://127.0.0.1:5000/". This URL can be used for local testing, it links to localhost port 5000.
 2. Make sure the login credentials are present as environment variables. The username should be named _"pats_user"_, and the pasword should be named _"pats\_passw"_. The easiest way to add them to the environment is by adding a _".env"_ file to the root directory of the project.
 3. That is it, you are now ready to run the script!
 
@@ -297,13 +296,7 @@ The response body can be found below.
                                 "27": 0.0,
                                 "28": 8.0,
                                 "3": 0.0,
-                                "date": "20240709",
-                                "lir_diff": NaN,
-                                "mr_diff": NaN,
-                                "nc_diff": NaN,
-                                "ta_diff": NaN,
-                                "tr_diff": NaN,
-                                "wv_diff": NaN
+                                "date": "20240709"
                             },
                             {
                                 "24": 1.0,
@@ -312,13 +305,7 @@ The response body can be found below.
                                 "27": 0.0,
                                 "28": 8.0,
                                 "3": 0.0,
-                                "date": "20240711",
-                                "lir_diff": 0.0,
-                                "mr_diff": 0.0,
-                                "nc_diff": 0.0,
-                                "ta_diff": 0.0,
-                                "tr_diff": 0.0,
-                                "wv_diff": 0.0
+                                "date": "20240711"
                             },
                         ],
                         "new_counts": [
@@ -512,7 +499,7 @@ The response body for the c flight track endpoint contains a list of measurement
 - `disparity_insect` difference in image location of insect left and right camera view
 - `elapsed` time since creation of folder containing flightpath
 - `foundL_insect` boolean whether an insect is found in the left view of the stereo camera
-- `fp` false positive indicator. Default values is fp_not_a_fp when no abnormalities are detected. 
+- `fp` false positive indicator. Default values is fp_not_a_fp when no abnormalities are detected.
 - `hunt_id` the id of the interception with drone, default to -1 if no interception has taken place
 - `imLx_insect` and `imLy_insect` center position of the insect in a rendered (non-raw stereo video)
 - `imLx_pred_insect` and `imLy_pred_insect` estimated center position (based on previous data points) of the insect in a rendered video
@@ -524,11 +511,11 @@ The response body for the c flight track endpoint contains a list of measurement
 - `pos_valid_insect` indicator whether moving averaging filter for smoothed positions is full
 - `radius_insect` radius of the insect in m
 - `rs_id` the id of the measurement.
-- `saccX_insect`, `saccY_insect` and `saccZ_insect` smoothed acceleration of the insect in the viewport of the camera. 
+- `saccX_insect`, `saccY_insect` and `saccZ_insect` smoothed acceleration of the insect in the viewport of the camera.
 - `score_insect` estimated quality of the blob
 - `size_insect` the estimated size (diameter of bounding box) of the insect in pixel values
-- `sposX_insect`, `sposY_insect` and `sposZ_insect` smoothed positions of the insect in the viewport of the camera. 
-- `svelX_insect`, `svelY_insect` and `svelZ_insect` the velocity 
+- `sposX_insect`, `sposY_insect` and `sposZ_insect` smoothed positions of the insect in the viewport of the camera.
+- `svelX_insect`, `svelY_insect` and `svelZ_insect` the velocity
 - `vel_valid_insect` boolean indicator whether moving averaging filter for smoothed velocities is full.
 
 Response body:
