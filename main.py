@@ -1,16 +1,17 @@
+import os
+from datetime import datetime, timedelta
+from typing import Tuple
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+import logger
 from plot_examples import ExamplePlots
 from pats_service import PatsService
-from datetime import datetime, timedelta
-from dotenv import load_dotenv
-import matplotlib.pyplot as plt
-import logger
-import os
 
 logger.init_logger(logger=logger.logger)
 load_dotenv()
 
 
-def read_credentials() -> tuple[str, str]:
+def read_credentials() -> Tuple[str, str]:
     """Method to retrieve the login credentials from the local environment.
     Make sure that in the local environment the username is named as "pats_user",
     and the password is named as "pats_passw".

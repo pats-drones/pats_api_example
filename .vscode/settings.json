@@ -6,7 +6,7 @@
         "--ignore=E501"
     ],
     "pylint.args": [
-        "--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,invalid-name,line-too-long,logging-not-lazy,redefined-outer-name",
+        "--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,invalid-name,line-too-long,logging-not-lazy,redefined-outer-name,broad-exception-raised,logging-fstring-interpolation",
         "--generated-members=numpy.* ,torch.*",
     ],
     "flake8.args": [

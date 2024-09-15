@@ -1,6 +1,6 @@
-from colorlog import ColoredFormatter
 import logging.handlers
 import logging
+from colorlog import ColoredFormatter
 
 
 # Create a logger.

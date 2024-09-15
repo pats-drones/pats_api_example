@@ -1,11 +1,12 @@
-from datetime import datetime
-from typing import Optional
-from PIL import Image
-from io import BytesIO
-import pandas as pd
 import sys
+import json
 import logging
+from datetime import datetime
+from typing import Optional, List
+from io import BytesIO
 import requests
+import pandas as pd
+from PIL import Image
 
 
 class PatsService:
@@ -159,7 +160,8 @@ class PatsService:
             sys.exit(1)
 
         self.logger.info("Successfully sections from pats server")
-        return response.json()['sections']
+        return json.loads(response.text)['sections']
+        # return response.json()['sections'] # this doesn't work for me? Maybe a python 3.10 issue?
 
     def download_spots(self, section_id: int, map_snapping: bool = True) -> dict:
         """Method used to download the spots from the Pats server.
@@ -222,7 +224,7 @@ class PatsService:
         start_date: datetime,
         end_date: datetime,
         section_id: int,
-        detection_class_ids: list[int],
+        detection_class_ids: List[int],
         bin_mode: str = "D",
         average_24h_bin: bool = False,
     ):
