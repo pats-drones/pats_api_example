@@ -14,7 +14,7 @@ class PatsService:
         self,
         user: str,
         passw: str,
-        server: str = "https://beta.pats-c.com",
+        server: str = "https://pats-c.com/",
         timeout: int = 45,
     ):
         """Constructor method for the "PatsService" class.
@@ -163,7 +163,7 @@ class PatsService:
         return json.loads(response.text)['sections']
         # return response.json()['sections'] # this doesn't work for me? Maybe a python 3.10 issue?
 
-    def download_spots(self, section_id: int, map_snapping: bool = True) -> dict:
+    def download_spots(self, section_id: int, map_snapping: bool = False) -> dict:
         """Method used to download the spots from the Pats server.
         The json consists of two dictionaries, the first containing the spots for c systems,
         and the second containing spots for trapeye systems.
