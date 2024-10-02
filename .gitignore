@@ -3,3 +3,4 @@
 temp_video.mkv
 
 /__pycache__*
+.venv*

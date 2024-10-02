@@ -56,7 +56,6 @@ class PatsService:
                 f"Retrieving token from server failed: {str(response.status_code)}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
 
         self.logger.info(f"Successfully retrieved API token from server: {self.server}")
         return response.json()["access_token"]
@@ -98,7 +97,6 @@ class PatsService:
         response = requests.get(self.server + '/api/detection_classes', headers=headers, timeout=self.timeout)
         if response.status_code != 200:
             self.logger.critical(f"Download detection classes failed: {str(response.status_code)}, msg: {response.text}")
-            sys.exit(1)
 
         self.logger.info("Successfully retrieved detection classes from pats server")
         return response.json()['detection_classes']
@@ -157,7 +155,6 @@ class PatsService:
         response = requests.get(self.server + '/api/sections', headers=headers, timeout=self.timeout)
         if response.status_code != 200:
             self.logger.critical(f"Download sections failed: {str(response.status_code)}, msg: {response.text}")
-            sys.exit(1)
 
         self.logger.info("Successfully sections from pats server")
         return json.loads(response.text)['sections']
@@ -214,7 +211,6 @@ class PatsService:
                 f"Download spots failed: {response.status_code}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
 
         self.logger.info("Successfully retrieved spots from pats servers")
         return response.json()
@@ -352,7 +348,6 @@ class PatsService:
                 f"Download counts failed: {response.status_code}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
 
         self.logger.info("Successfully retrieved counts from pats servers")
         return response.json()
@@ -407,7 +402,6 @@ class PatsService:
                 f"Download photo list failed: {response.status_code}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
 
         self.logger.info("Successfully downloaded photo list from pats server")
         return response.json()["photos"]
@@ -441,7 +435,6 @@ class PatsService:
                 f"Download photo failed: {response.status_code}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
 
         return Image.open(BytesIO(response.content))
 
@@ -529,7 +522,6 @@ class PatsService:
                 f"Download c detection features failed: {response.status_code}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
 
         self.logger.info("Successfully downloaded c detection features")
         return pd.DataFrame.from_records(response.json()["data"])
@@ -603,7 +595,6 @@ class PatsService:
                 f"Download c flight track failed: {response.status_code}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
 
         self.logger.info(f"Successfully downloaded c flight track from: {detection_uid}")
         return pd.DataFrame.from_records(response.json()["data"])
@@ -637,7 +628,6 @@ class PatsService:
                 f"Download c video failed: {response.status_code}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
 
         self.logger.info(f"Successfully downloaded c video from detection: {detection_uid}")
         return response.content
