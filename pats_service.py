@@ -14,7 +14,9 @@ class PatsService:
         self,
         user: str,
         passw: str,
-        server: str = "https://pats-c.com/",
+        server: str = "https://pats-c.com",
+        # server: str = "https://beta.pats-c.com", # beta server: be aware, not stable and used for experimental stuff
+        # server: str = "http://127.0.0.1:5000", # local testing
         timeout: int = 45,
     ):
         """Constructor method for the "PatsService" class.
@@ -23,7 +25,7 @@ class PatsService:
         Args:
             user (str): username of the account from where we are retrieving information.
             passw (str): password of the account from where we are retrieving information.
-            server (str, optional): URL to the server. Defaults to "https://beta.pats-c.com".
+            server (str, optional): URL to the server. Defaults to "https://pats-c.com".
             timeout(int, optional): number of seconds before any requests made to the server will timeout. Defaults to 45 seconds.
         """
         self.logger = logging.getLogger(name="log")
