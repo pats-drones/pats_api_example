@@ -113,19 +113,22 @@ if __name__ == "__main__":
         # Download the detections in the example section, from the specified sensor, from the specified insect class, in the specified time frame.
         # And make an scatter plot from it.
         df_detections = pats_service.download_c_detection_features(example_section['id'], some_row_id, some_post_id, some_system_id, some_insect_class['id'], start_datetime, end_datetime)
-        example_plots.c_scatter_plot(df_detections, some_insect_class)
+        if df_detections.empty:
+            print('Warning: no detections!')
+        else:
+            example_plots.c_scatter_plot(df_detections, some_insect_class)
 
-        # From the first detection we downloaded, get the unique id.
-        # We will download the flight track of the insect in this detection, and show a plot of it.
-        some_insect = df_detections['uid'].iloc[0]
-        df_flight = pats_service.download_c_flight_track(example_section['id'], some_insect)
-        example_plots.c_flight_3d_plot(df_flight)
+            # From the first detection we downloaded, get the unique id.
+            # We will download the flight track of the insect in this detection, and show a plot of it.
+            some_insect = df_detections['uid'].iloc[0]
+            df_flight = pats_service.download_c_flight_track(example_section['id'], some_insect)
+            example_plots.c_flight_3d_plot(df_flight)
 
-        # We can also download the video of the insect.
-        # Word of warning: this download can easily take over a minute, as the render is being done on demand on the edge.
-        mkv_data = pats_service.download_c_video(example_section['id'], some_insect)
-        with open("temp_video.mkv", "wb") as file:
-            file.write(mkv_data)  # open with any normal video player, e.g. vlc
+            # We can also download the video of the insect.
+            # Word of warning: this download can easily take over a minute, as the render is being done on demand on the edge.
+            mkv_data = pats_service.download_c_video(example_section['id'], some_insect)
+            with open("temp_video.mkv", "wb") as file:
+                file.write(mkv_data)  # open with any normal video player, e.g. vlc
 
     # Show the plots, the program will not terminate while the plots are open.
     plt.show(block=True)
