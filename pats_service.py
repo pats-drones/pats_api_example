@@ -321,9 +321,10 @@ class PatsService:
             end_date (datetime): end date to which counts will be downloaded.
             section_id (int, optional): id of the section for which counts will be downloaded.
             detection_class_ids (list[int], optional): list of insect ids, for which counts will be downloaded.
-            bin_mode (str, optional): EITHER 'D' OR 'H'!! corresponds to daily or hourly binning respectively . Defaults to "D".
+            bin_mode (str, optional): EITHER 'D' OR 'h'!! corresponds to daily or hourly binning respectively . Defaults to "D".
             average_24h_bin (bool, optional): boolean flag, whether to include daily insect distribution within
                                               the selected date range or not. Defaults to False.
+            Following pandas, bin_mode 'H' will be deprecated in a future release
 
         Returns:
             dict: response body containing the counts in json format.
