@@ -165,7 +165,7 @@ class PatsService:
         return json.loads(response.text)['sections']
         # return response.json()['sections'] # this doesn't work for me? Maybe a python 3.10 issue?
 
-    def download_spots(self, section_id: int, map_snapping: bool = False) -> dict:
+    def download_spots(self, section_id: int, snapping_mode: str = 'disabled') -> dict:
         """Method used to download the spots from the Pats server.
         The json consists of two dictionaries, the first containing the spots for c systems,
         and the second containing spots for trapeye systems.
@@ -195,19 +195,21 @@ class PatsService:
 
         Args:
             section_id (int, optional): the id of the section for which the spots will be downloaded.
-            map_snapping(bool, optional): flag to turn on map snapping on the hand placed location of sensors. Defaults to True.
+            snapping_mode(str, optional): sets the map snapping mode on the hand placed location of sensors. Defaults to 'disabled'. Options:
+                'auto': automatic selection between row/post mode
+                'row': snap using the assumption most trapeyes are placed in rows
+                'post': snap using the assumption most trapeyes are placed in posts
+                'disabled': no snapping, return orignaly scanned gps locations
+            map_snapping(int, optional): to be deprecated in a future release in favor of snapping_mode
 
         Returns:
             dict: a dict containing the json response body.
         """
         self.logger.debug("Downloading spots from pats server")
 
-        # Convert boolean to int.
-        map_snapping_num: int = int(map_snapping)
-
         # Initialize header and request body.
         headers = {"Authorization": "Bearer " + self.token}
-        params = {"section_id": str(section_id), "map_snapping": map_snapping_num}
+        params = {"section_id": str(section_id), "snapping_mode": snapping_mode}
 
         # Send request, and validate response code.
         response = requests.get(self.server + "/api/spots", headers=headers, params=params, timeout=self.timeout)

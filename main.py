@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     # Download the spots of all sensors in the example section,
     # here you can find information about individual sensors, like the location.
-    spots = pats_service.download_spots(section_id=example_section["id"])
+    spots = pats_service.download_spots(section_id=example_section["id"], snapping_mode='disabled')
 
     # Download the counts from all sensors in the example section,
     # for the selected insect(s), for the selected date range.
