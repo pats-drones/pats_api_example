@@ -120,7 +120,7 @@ class PatsService:
                                 "available_in_c": 0,
                                 "available_in_trapeye": 1,
                                 "bb_label": "ta",
-                                "benificial": 0,
+                                "beneficial": 0,
                                 "c_level_1": 5,
                                 "c_level_2": 15,
                                 "c_level_3": 30,

@@ -127,7 +127,7 @@ The response body for the sections endpoint contains an array of section objects
 - `detection_classes`
     - `available_in_c` flag whether this detection class is available for pats-c.
     - `available_in_trapeye` flag whether this detection class is available for trapeye's.
-    - `benificial` flag whether this detection class (insect) is good or bad.
+    - `beneficial` flag whether this detection class (insect) is good or bad.
     - `c_level_x` a threshold set on the [website]("https://pats-c.com/login").
     - `id` insect id.
     - `trapeye_level` a threshold set on the [website]("https://pats-c.com/login").
@@ -143,7 +143,7 @@ The response body for the sections endpoint contains an array of section objects
                     "available_in_c": 0,
                     "available_in_trapeye": 1,
                     "bb_label": "str",
-                    "benificial": 0,
+                    "beneficial": 0,
                     "c_level_1": 5,
                     "c_level_2": 15,
                     "c_level_3": 30,
