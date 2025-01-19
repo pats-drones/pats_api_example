@@ -9,6 +9,10 @@ import pandas as pd
 from PIL import Image
 
 
+class PatsServiceError(Exception):
+    pass
+
+
 class PatsService:
     def __init__(
         self,
@@ -446,7 +450,7 @@ class PatsService:
                 f"Download photo failed: {response.status_code}, msg: {response.text}",
                 exc_info=True,
             )
-            sys.exit(1)
+            raise PatsServiceError(response.text)
 
         return Image.open(BytesIO(response.content))
 

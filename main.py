@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 import logger
 from plot_examples import ExamplePlots
-from pats_service import PatsService
+from pats_service import PatsService, PatsServiceError
 
 logger.init_logger(logger=logger.logger)
 load_dotenv()
@@ -91,8 +91,14 @@ if __name__ == "__main__":
         # Get the list with available photos from the pats server.
         # Then download the first photo from that list and show it.
         photo_list = pats_service.download_trapeye_photo_list(example_section['id'], some_row_id, some_post_id, past_date, today)
-        image = pats_service.download_trapeye_photo(example_section['id'], some_row_id, some_post_id, photo_list[0])
-        image.show()
+        if photo_list:
+            try:
+                image = pats_service.download_trapeye_photo(example_section['id'], some_row_id, some_post_id, photo_list[0])
+                image.show()
+            except PatsServiceError as e:
+                print(e)
+        else:
+            print('No trapeye photo\'s available.')
 
     # Now, let's go get a flight track and a video from PATS-C!
     if len(spots['c']):
