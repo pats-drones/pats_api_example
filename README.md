@@ -167,6 +167,8 @@ The response body for the sections endpoint contains an array of section objects
         }
     ]
 }
+
+N.B. that in a previous version a spelling bug was introduced: `benificial`. This has been deprecated and will be removed in a future version.
 ```
 
 ### 3. ${server}/api/spots
@@ -177,14 +179,19 @@ The spots endpoint will return information of all the individual "c" , and "trap
 
 #### Request body spots
 
-The request body can be found below. Here the `section_id` is the id of the section from which the spots will be retrieved. `map_snapping` is a flag that either snaps the sensor locations to the map or not, with `map_snapping` turned on lines of sensors will be straighter.
+The request body can be found below. Here the `section_id` is the id of the section from which the spots will be retrieved. `snapping_mode` is a flag that enables to snaps the sensor locations to the map. It defaults to `auto` and supports:
+`row`: Aligns rows independently by snapping posts within a row to a straight line, optimizing row positioning.
+`post`: Aligns rows of posts along straight lines based on average post locations across rows.
+`auto`: Automatically determines the best snapping mode (row- or post-based) based on data characteristics and GPS accuracy.
+`disabled`: Retains raw GPS coordinates without applying any snapping or alignment adjustments.
 
 ```JSON
 {
     "section_id": "str",
-    "map_snapping": 1
+    "snapping_mode" "str":
 }
 ```
+N.B. `map_snapping` is deprecated in favor of snapping_mode and will be removed in a future version.
 
 #### Response body spots
 
@@ -234,7 +241,7 @@ The request body can be found below. Some notes:
 - `average_24h_bin` (**OPTIONAL**, defaults to 0) is a boolean flag represented as an int. When `average_24h_bin` is set to 1, you will also retrieve information about the number of detections on different hours of the day.
 - `start_date` and `end_date` are string representing dates. The format should be: _%Y%m%d"_.
 - `detection_class_ids` (**OPTIONAL**, defaults to None)is a list of insect ids in the form of a string. The format should be _"insectId1,insectId2,insectId3..."_.
-- `bin_mode`(**OPTIONAL**, defaults to "D") is a string and should either be `D` or `H`. Which stand for daily or hourly binning respectively.
+- `bin_mode`(**OPTIONAL**, defaults to "D") is a string and should either be `D` or `h` (`H` is now deprecated in favor of `h`). Which stand for daily or hourly binning respectively.
 
 ```JSON
 {
@@ -255,6 +262,8 @@ In `c` the counts of all pats-c sensors in the provided section in between the p
 
 - `counts` the counts on different timestamps (`datetime` in format _"%Y%m%d_%H%M%S"_). Each count contains all the insect ids that the pats-c counts in this section.
 - `post_id` and `row_id` form together the location of the sensor.
+- `spot_id` and `system_id` note the internal spot id, and what system id is installed (currently) at that spot.
+
 
 in `trapeye` you get a little more information. You get the `absolute_count`, which contains, not at all surprisingly, the absolute count of a insect, but also the difference with the previous absolute count. There is also the `new_count`, which is the new count since the last count.
 
@@ -329,7 +338,9 @@ The response body can be found below.
                             },
                         ],
                         "post_id": 12,
-                        "row_id": 24
+                        "row_id": 24,
+                        "spot_id": 123,
+                        "system_id": 456
                     },
 ```
 

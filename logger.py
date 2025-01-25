@@ -1,7 +1,8 @@
-import logging.handlers
+# file: logger.py
 import logging
-from colorlog import ColoredFormatter
+import logging.handlers
 
+from colorlog import ColoredFormatter
 
 # Create a logger.
 logger = logging.getLogger(name="log")

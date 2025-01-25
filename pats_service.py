@@ -1,11 +1,13 @@
-import sys
+# file: pats_service.py
 import json
 import logging
+import sys
 from datetime import datetime
-from typing import Optional, List
 from io import BytesIO
-import requests
+from typing import List, Optional
+
 import pandas as pd
+import requests
 from PIL import Image
 
 
@@ -20,7 +22,7 @@ class PatsService:
         passw: str,
         server: str = "https://pats-c.com",
         # server: str = "https://beta.pats-c.com", # beta server: be aware, not stable and used for experimental stuff
-        # server: str = "http://127.0.0.1:5000", # local testing
+        # server: str = "http://127.0.0.1:5000",  # local testing
         timeout: int = 45,
     ):
         """Constructor method for the "PatsService" class.
@@ -59,7 +61,7 @@ class PatsService:
         response = requests.post(server + "/token", request_body, timeout=self.timeout)
         if response.status_code != 200:
             self.logger.critical(
-                f"Retrieving token from server failed: {str(response.status_code)}, msg: {response.text}",
+                f"Retrieving token from server failed: {response.status_code!s}, msg: {response.text}",
                 exc_info=True,
             )
             sys.exit(1)
@@ -98,16 +100,16 @@ class PatsService:
         self.logger.debug("Retrieving detection classes from pats server")
 
         # Initialize headers.
-        headers = {'Authorization': 'Bearer ' + self.token}
+        headers = {"Authorization": "Bearer " + self.token}
 
         # Send request, and validate response code.
-        response = requests.get(self.server + '/api/detection_classes', headers=headers, timeout=self.timeout)
+        response = requests.get(self.server + "/api/detection_classes", headers=headers, timeout=self.timeout)
         if response.status_code != 200:
-            self.logger.critical(f"Download detection classes failed: {str(response.status_code)}, msg: {response.text}")
+            self.logger.critical(f"Download detection classes failed: {response.status_code!s}, msg: {response.text}")
             sys.exit(1)
 
         self.logger.info("Successfully retrieved detection classes from pats server")
-        return response.json()['detection_classes']
+        return response.json()["detection_classes"]
 
     def download_sections(self) -> dict:
         """Download sections from pats server.
@@ -157,19 +159,19 @@ class PatsService:
         self.logger.debug("Retrieving sections from pats server")
 
         # Initialize headers.
-        headers = {'Authorization': 'Bearer ' + self.token}
+        headers = {"Authorization": "Bearer " + self.token}
 
         # Send request, and validate response code.
-        response = requests.get(self.server + '/api/sections', headers=headers, timeout=self.timeout)
+        response = requests.get(self.server + "/api/sections", headers=headers, timeout=self.timeout)
         if response.status_code != 200:
-            self.logger.critical(f"Download sections failed: {str(response.status_code)}, msg: {response.text}")
+            self.logger.critical(f"Download sections failed: {response.status_code!s}, msg: {response.text}")
             sys.exit(1)
 
         self.logger.info("Successfully sections from pats server")
-        return json.loads(response.text)['sections']
+        return json.loads(response.text)["sections"]
         # return response.json()['sections'] # this doesn't work for me? Maybe a python 3.10 issue?
 
-    def download_spots(self, section_id: int, snapping_mode: str = 'disabled') -> dict:
+    def download_spots(self, section_id: int, snapping_mode: str = "disabled") -> dict:
         """Method used to download the spots from the Pats server.
         The json consists of two dictionaries, the first containing the spots for c systems,
         and the second containing spots for trapeye systems.
@@ -338,8 +340,8 @@ class PatsService:
         self.logger.debug("Retrieving counts from pats server")
         # Make sure all provided parameters are in the right format, and are the right type.
         section_id_str: str = str(section_id)
-        start_date_formatted: str = start_date.strftime('%Y%m%d')
-        end_date_formatted: str = end_date.strftime('%Y%m%d')
+        start_date_formatted: str = start_date.strftime("%Y%m%d")
+        end_date_formatted: str = end_date.strftime("%Y%m%d")
         detection_class_ids_str: str | None = ",".join(map(str, detection_class_ids)) if detection_class_ids else None
         average_24h_bin_num: int = int(average_24h_bin)
 
@@ -402,11 +404,11 @@ class PatsService:
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
         params = {
-            'section_id': str(section_id),
-            'row_id': str(row_id),
-            'post_id': str(post_id),
-            'start_date': start_date_formatted,
-            'end_date': end_date_formatted,
+            "section_id": str(section_id),
+            "row_id": str(row_id),
+            "post_id": str(post_id),
+            "start_date": start_date_formatted,
+            "end_date": end_date_formatted,
         }
 
         # Send request, and validate response code.
@@ -437,10 +439,10 @@ class PatsService:
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
         params = {
-            'section_id': str(section_id),
-            'row_id': str(row_id),
-            'post_id': str(post_id),
-            'datetime': photo_id,
+            "section_id": str(section_id),
+            "row_id": str(row_id),
+            "post_id": str(post_id),
+            "datetime": photo_id,
         }
 
         # Send request, and validate response code.
@@ -504,8 +506,8 @@ class PatsService:
         """
         self.logger.debug("Retrieving c detection features")
         # Format the start and end date.
-        start_date_formatted: str = start_date.strftime('%Y%m%d_%H%M%S')
-        end_date_formatted: str = end_date.strftime('%Y%m%d_%H%M%S')
+        start_date_formatted: str = start_date.strftime("%Y%m%d_%H%M%S")
+        end_date_formatted: str = end_date.strftime("%Y%m%d_%H%M%S")
 
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
@@ -515,20 +517,20 @@ class PatsService:
         # The preferred body is the one with a row and post id.
         if system_id is None:
             params = {
-                'section_id': str(section_id),
-                'row_id': str(row_id),
-                'post_id': str(post_id),
-                'detection_class_id': str(detection_class_id),
-                'start_datetime': start_date_formatted,
-                'end_datetime': end_date_formatted,
+                "section_id": str(section_id),
+                "row_id": str(row_id),
+                "post_id": str(post_id),
+                "detection_class_id": str(detection_class_id),
+                "start_datetime": start_date_formatted,
+                "end_datetime": end_date_formatted,
             }
         else:
             params = {
-                'section_id': str(section_id),
-                'system_id': str(system_id),
-                'detection_class_id': str(detection_class_id),
-                'start_datetime': start_date_formatted,
-                'end_datetime': end_date_formatted,
+                "section_id": str(section_id),
+                "system_id": str(system_id),
+                "detection_class_id": str(detection_class_id),
+                "start_datetime": start_date_formatted,
+                "end_datetime": end_date_formatted,
             }
 
         # Send request, and validate response code.
@@ -601,8 +603,8 @@ class PatsService:
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
         params = {
-            'section_id': str(section_id),
-            'detection_uid': str(detection_uid),
+            "section_id": str(section_id),
+            "detection_uid": str(detection_uid),
         }
 
         # Send request, and validate response code.
@@ -634,9 +636,9 @@ class PatsService:
         # Initialize the header and request body.
         headers = {"Authorization": "Bearer " + self.token}
         params = {
-            'section_id': str(section_id),
-            'detection_uid': str(detection_uid),
-            'raw_stereo': str(raw_stereo_num)
+            "section_id": str(section_id),
+            "detection_uid": str(detection_uid),
+            "raw_stereo": str(raw_stereo_num)
         }
 
         # Send request, and validate response code.

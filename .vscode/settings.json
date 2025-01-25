@@ -1,42 +1,31 @@
+// file: .vscode/settings.json
 {
     "files.trimTrailingWhitespace": true,
     "files.trimFinalNewlines": true,
     "editor.formatOnSave": true,
-    "autopep8.args": [
-        "--ignore=E501"
-    ],
-    "pylint.args": [
-        "--disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,invalid-name,line-too-long,logging-not-lazy,redefined-outer-name,broad-exception-raised,logging-fstring-interpolation",
-        "--generated-members=numpy.* ,torch.*",
-    ],
-    "flake8.args": [
-        "--max-line-length=999",
-        "--ignore=E402,W503",
-    ],
-    "mypy-type-checker.args": [
-        "--ignore-missing-imports"
-    ],
+    "ruff.lint.run": "onSave",
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "always"
+    },
     "python.analysis.typeCheckingMode": "standard",
     "python.analysis.diagnosticSeverityOverrides": {
         "reportUnusedImport": "information",
         "reportUnknownParameterType": "none",
-        "reportGeneralTypeIssues": "none",
+        "reportGeneralTypeIssues": "information",
         "reportArgumentType": "none",
-        "reportCallIssue": "none",
-        "reportReturnType": "none",
-        "reportAttributeAccessIssue": "none",
-        "reportOperatorIssue": "none",
-        "reportIndexIssue": "none",
-        "reportOptionalMemberAccess": "none",
-        "reportAssignmentType": "none"
+        "reportCallIssue": "information",
+        "reportReturnType": "information",
+        "reportAttributeAccessIssue": "information",
+        "reportOperatorIssue": "information",
+        "reportIndexIssue": "information",
+        "reportOptionalMemberAccess": "information",
+        "reportOptionalCall": "information",
+        "reportAssignmentType": "information"
     },
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "notebook.defaultFormatter": "ms-python.autopep8",
     "[python]": {
-        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.defaultFormatter": "ms-python.autopep8"
     },
-    "cSpell.enabled": true,
-    "cSpell.words": [
-        "Biobest",
-        "trapeye",
-        "trapeye's"
-    ],
+    "pylint.enabled": false,
 }

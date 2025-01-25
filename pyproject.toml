@@ -1,0 +1,85 @@
+#file: pyproject.toml
+
+[tool.autopep8]
+aggressive = 1  # Level of aggressiveness (0, 1, 2)
+max_line_length = 999  # Line length to comply with (e.g., PEP 8 recommends 79)
+ignore = ["E501"]  # List of error codes to ignore
+select = ["E1","E2", "E3","W1", "W2", "W3"]  # List of error codes to exclusively fix
+exclude = "*/migrations/*, */build/*"
+
+[tool.ruff]
+line-length = 320  # Set maximum line length for Ruff
+extend-exclude = ["migrations/.*", "docs/.*"]  # Additional paths to exclude
+
+[tool.ruff.lint]
+select = ["F", "Q", "I", "E", "W", "B", "C4","N","PL", "C90", "RUF", "S", "SIM"]
+# select = ["F", "Q", "I", "E", "W", "B", "C4","N","PL", "C90", "RUF", "S", "SIM", "UP"]
+ignore = ["E501","PLR0911","PLR0912","PLR0913","PLR0915", "SIM112", "C901", "S608", "S602", "PLR2004"]  # Disable line-length rule
+fixable = ["F", "Q", "I", "E", "W", "RUF"]  # Automatically fix Pyflakes issues and string quotes
+unfixable = ["F401"]  # Avoid fixing unused imports
+
+[tool.ruff.isort]
+combine-as-imports = true
+force-wrap-aliases = false
+case-sensitive = false
+order-by-type = false
+
+[tool.pylint.master]
+init-hook = 'import sys; sys.path.extend(["./dashboard", "./lib", "./processing", "./dashboard/modals"])'
+ignore = ["tests"]
+good-names = ["i", "j", "k", "e", "x", "y", "z", "_", "id"]
+
+[tool.pylint.messages_control]
+disable = [
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "invalid-name",
+    "line-too-long",
+    "logging-not-lazy",
+    "logging-fstring-interpolation",
+    "redefined-outer-name",
+    "broad-exception-caught",
+    "broad-exception-raised",
+    "unused-argument",
+    "wrong-import-order",  # handled by ruff
+    "wrong-import-position"  # handled by ruff
+]
+
+[tool.pylint.format]
+max-line-length = 999
+
+[tool.pylint.logging]
+logging-format-style = "new"
+
+[tool.pylint.reports]
+reports = false
+
+[tool.pylint.design]
+max-args = 10
+
+[tool.pylint.similarities]
+min-similarity-lines = 4
+
+[tool.pylint.imports]
+known-standard-library = ["numpy", "torch", "dash", "pandas", "plotly"]
+
+[tool.pylint.variables]
+const-rgx = "(([a-z_][a-z0-9_]{2,30})|(__.*__))$"
+
+[tool.pylint.exceptions]
+overgeneral-exceptions = [
+    "builtins.BaseException",
+    "builtins.Exception"
+]
+
+
+[tool.mypy]
+python_version = "3.12"  # Specify the target Python version
+strict = false            # Enable strict mode (equivalent to enabling multiple strict options)
+ignore_missing_imports = true  # Ignore errors for missing imports
+warn_unused_ignores = false     # Warn about unnecessary `# type: ignore` comments
+show_error_codes = true        # Display error codes in the output
+check_untyped_defs = false      # Check functions without type annotations
+disallow_untyped_calls = false  # Disallow calls to functions without type annotations
+exclude = "(migrations|build|venv|dist)/.*"  # Exclude specific directories or patterns
