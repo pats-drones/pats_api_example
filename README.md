@@ -188,7 +188,7 @@ The request body can be found below. Here the `section_id` is the id of the sect
 ```JSON
 {
     "section_id": "str",
-    "snapping_mode" "str":
+    "snapping_mode": "str"
 }
 ```
 N.B. `map_snapping` is deprecated in favor of snapping_mode and will be removed in a future version.
@@ -292,7 +292,9 @@ The response body can be found below.
                             },
                         ],
                         "post_id": 21,
-                        "row_id": 42
+                        "row_id": 42,
+                        "spot_id": 123,
+                        "system_id": 456
                     }
             ],
                 "trapeye": [
@@ -338,9 +340,7 @@ The response body can be found below.
                             },
                         ],
                         "post_id": 12,
-                        "row_id": 24,
-                        "spot_id": 123,
-                        "system_id": 456
+                        "row_id": 24
                     },
 ```
 
