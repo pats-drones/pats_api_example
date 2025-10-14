@@ -136,6 +136,92 @@ class ExamplePlots():
         plt.ylabel("Insects fresh on the card")
         plt.legend()
 
+    def trapeye_counts_to_excel(self, counts: dict, insect_table: dict, file_path: str,) -> None:
+        """Save Trap-Eye counts to an Excel workbook grouped by insect class.
+
+        The resulting workbook contains one worksheet per insect. Each worksheet
+        has a row for every date and a column for each Trap-Eye sensor,
+        mirroring the data that is visualised in :meth:`trapeye_plot`.
+
+        Args:
+            counts (dict): the response body out of the counts endpoint.
+            insect_table (dict): dictionary containing the detection classes.
+            file_path (str): path where the Excel workbook should be stored.
+        """
+
+        trapeyes = counts.get("trapeye", [])
+        if not trapeyes:
+            raise ValueError("No Trap-Eye counts available to export.")
+
+        insect_data: dict[str, pd.DataFrame] = {}
+        used_trapeye_labels: set[str] = set()
+
+        for index, trapeye in enumerate(trapeyes):
+            trapeye_counts = trapeye.get("new_counts", [])
+            if not trapeye_counts:
+                continue
+
+            df = pd.DataFrame.from_records(trapeye_counts)
+            if df.empty or "date" not in df.columns:
+                continue
+
+            df.dropna(axis=0, how="any", inplace=True)
+            if df.empty:
+                continue
+
+            df["date"] = pd.to_datetime(df["date"], format="%Y%m%d")
+            df = df.set_index("date")
+
+            label_parts: list[str] = []
+            if trapeye.get("row_id") is not None:
+                label_parts.append(f"row {trapeye['row_id']}")
+            if trapeye.get("post_id") is not None:
+                label_parts.append(f"post {trapeye['post_id']}")
+            base_label = " ".join(label_parts).strip() or f"trapeye_{index}"
+
+            trapeye_label = base_label
+            suffix = 1
+            while trapeye_label in used_trapeye_labels:
+                suffix += 1
+                trapeye_label = f"{base_label}_{suffix}"
+            used_trapeye_labels.add(trapeye_label)
+
+            for insect_id in df.columns:
+                insect_series = df[insect_id].rename(trapeye_label)
+                insect_series = pd.to_numeric(insect_series, errors="coerce")
+
+                if insect_id not in insect_data:
+                    insect_data[insect_id] = insect_series.to_frame()
+                else:
+                    insect_data[insect_id] = insect_data[insect_id].join(
+                        insect_series, how="outer"
+                    )
+
+        if not insect_data:
+            raise ValueError("No Trap-Eye data found to export.")
+
+        sheet_names: set[str] = set()
+        with pd.ExcelWriter(file_path) as writer:
+            for insect_id, insect_df in insect_data.items():
+                insect_df_sorted = insect_df.sort_index()
+                insect_df_sorted = insect_df_sorted.sort_index(axis=1)
+
+                insect_info = insect_table.get(insect_id, {})
+                sheet_name = (insect_info.get("label") or "").strip()
+                if not sheet_name:
+                    sheet_name = str(insect_id)
+
+                sheet_name = sheet_name[:31] or str(insect_id)
+                base_sheet_name = sheet_name
+                counter = 1
+                while sheet_name in sheet_names:
+                    counter += 1
+                    suffix = f"_{counter}"
+                    sheet_name = f"{base_sheet_name[:31 - len(suffix)]}{suffix}"
+                sheet_names.add(sheet_name)
+
+                insect_df_sorted.to_excel(writer, sheet_name=sheet_name)
+
     def c_scatter_plot(self, detections_df: pd.DataFrame, insect_class: dict) -> None:
         """Plot an example figure of a scatter plot from detections.
 
