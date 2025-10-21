@@ -77,7 +77,7 @@ The header is for all GET endpoint the same, it contains the authentication in f
 }
 ```
 
-### 1. ${server}/api/download_detection_classes
+### 1. ${server}/api/detection_classes
 
 _The detection classes endpoint does not have a request body._
 
