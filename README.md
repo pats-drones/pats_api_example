@@ -73,7 +73,7 @@ The header is for all GET endpoint the same, it contains the authentication in f
 
 ```JSON
 {
-    "Authorization": "str"
+    "Authorization": "Bearer: token_str"
 }
 ```
 
