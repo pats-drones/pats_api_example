@@ -179,25 +179,20 @@ The spots endpoint will return information of all the individual "c" , and "trap
 
 #### Request body spots
 
-The request body can be found below. Here the `section_id` is the id of the section from which the spots will be retrieved. `snapping_mode` is a flag that enables to snaps the sensor locations to the map. It defaults to `auto` and supports:
-`row`: Aligns rows independently by snapping posts within a row to a straight line, optimizing row positioning.
-`post`: Aligns rows of posts along straight lines based on average post locations across rows.
-`auto`: Automatically determines the best snapping mode (row- or post-based) based on data characteristics and GPS accuracy.
-`disabled`: Retains raw GPS coordinates without applying any snapping or alignment adjustments.
+The request body can be found below. Here the `section_id` is the id of the section from which the spots will be retrieved.
 
 ```JSON
 {
     "section_id": "str",
-    "snapping_mode": "str"
 }
 ```
-N.B. `map_snapping` is deprecated in favor of snapping_mode and will be removed in a future version.
+
 
 #### Response body spots
 
 In the response body there are two elements: `c` and `trapeye`.
 
-In the `c` element all pats-c sensors in the provided section will be listed. Information about the pats-c sensors is the: `label`, `latitude`, `longitude`, `post_id`, `row_id` and `system_id`.
+In the `c` element all pats-c sensors in the provided section will be listed. Information about the pats-c sensors is the: `label`, `latitude`, `longitude`, `latitude_snapped`, `longitude_snapped`, `post_id`, `row_id` and `system_id`.
 The post id and row id correspond to the post and row the sensor is placed on.
 
 in the `trapeye` element all trapeye sensors can be found. These don't have a `label`, and instead of a `system_id` they have a `unit_id`.
@@ -211,6 +206,8 @@ the response body can be found below.
             "label": "str",
             "latitude": 12.3456789,
             "longitude": 9.8765432,
+            "latitude_snapped": 12.3456789,
+            "longitude_snapped": 9.8765432,
             "post_id": 21,
             "row_id": 42,
             "system_id": 123
@@ -220,6 +217,8 @@ the response body can be found below.
         {
             "latitude": 98.76543210987654,
             "longitude": 1.2345678901234,
+            "latitude_snapped": 98.76543210987654,
+            "longitude_snapped": 1.2345678901234,
             "post_id": 42,
             "row_id": 21,
             "unit_id": 9876
