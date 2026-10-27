@@ -14,11 +14,11 @@ extend-exclude = ["migrations/.*", "docs/.*"]  # Additional paths to exclude
 [tool.ruff.lint]
 select = ["F", "Q", "I", "E", "W", "B", "C4","N","PL", "C90", "RUF", "S", "SIM"]
 # select = ["F", "Q", "I", "E", "W", "B", "C4","N","PL", "C90", "RUF", "S", "SIM", "UP"]
-ignore = ["E501","PLR0911","PLR0912","PLR0913","PLR0915", "SIM112", "C901", "S608", "S602", "PLR2004"]  # Disable line-length rule
+ignore = ["E501","PLR0911","PLR0912","PLR0913","PLR0915","PLR0917", "SIM112", "C901", "S608", "S602", "PLR2004"]  # Keep the existing public method signatures.
 fixable = ["F", "Q", "I", "E", "W", "RUF"]  # Automatically fix Pyflakes issues and string quotes
 unfixable = ["F401"]  # Avoid fixing unused imports
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 combine-as-imports = true
 force-wrap-aliases = false
 case-sensitive = false

@@ -44,16 +44,19 @@ def read_credentials() -> Tuple[str, str]:
 
 
 if __name__ == "__main__":
-    # Read the login credentials from the ".auth" file.
+    # Read the login credentials from the environment or .env file.
     user, passw = read_credentials()
 
     # Initialize "patsService" and "examplePlots" classes.
-    pats_service = PatsService(user=user, passw=passw)
+    pats_service = PatsService(user=user, passw=passw, timeout=180)
     example_plots = ExamplePlots()
 
     # Retrieve the detection classes and sections from Pats servers.
     insect_table = pats_service.download_detection_classes()
     sections = pats_service.download_sections()
+    if not sections:
+        print("No sections available for this account.")
+        raise SystemExit(0)
 
     # Pick an section to be used in the example.
     # Then we get the insect ids that are available for the choses section.
@@ -69,7 +72,7 @@ if __name__ == "__main__":
     # for the selected insect(s), for the selected date range.
     today = datetime.today()
     past_date = datetime.today() - timedelta(days=31)
-    counts = pats_service.download_counts(end_date=today, start_date=past_date, section_id=example_section["id"], detection_class_ids=available_insect_ids)
+    counts = pats_service.download_counts(end_date=today, start_date=past_date, section_id=example_section["id"], detection_class_ids=available_insect_ids, average_24h_bin=True)
 
     # If there are "c" counts in the received counts. Then show some example plots from them.
     if len(counts["c"]):
@@ -83,10 +86,6 @@ if __name__ == "__main__":
     # up to this point Trap-Eye and PATS-C data is virtually the same.
     # However when we go lower TrapEye periodically photographs a bulk and PATS-C stereo-video records individuals.
     # Thus we will split them up, lets start with an image from a Trap-Eye!
-    some_row_id = None
-    some_post_id = None
-    some_system_id = None
-
     if len(spots["trapeye"]):
         # For the example select a random row and post id.
         some_row_id = spots["trapeye"][0]["row_id"]
@@ -105,16 +104,18 @@ if __name__ == "__main__":
             print("No trapeye photo's available.")
 
     # Now, let's go get a flight track and a video from PATS-C!
-    if len(spots["c"]):
-        # Lets again select a random row and post for the example.
-        if spots["c"][0]["row_id"] is None or spots["c"][0]["post_id"] is None:
-            some_system_id = spots["c"][0]["system_id"]  # legacy for not all systems have a row/post location.
-        else:
-            some_row_id = spots["c"][0]["row_id"]
-            some_post_id = spots["c"][0]["post_id"]
+    for c_spot in spots["c"]:
+        some_row_id = c_spot.get("row_id")
+        some_post_id = c_spot.get("post_id")
+        if any(not isinstance(value, int) or isinstance(value, bool) for value in (some_row_id, some_post_id)):
+            print(f"Skipping PATS-C detection features for device {c_spot.get('system_id')}: valid row_id and post_id coordinates are required.")
+            continue
 
         # Select the first insect that is available for pats-c
-        some_insect_class: dict = next((item for item in example_section["detection_classes"] if item["available_in_c"]), {})
+        some_insect_class = next((item for item in example_section["detection_classes"] if item["available_in_c"]), None)
+        if some_insect_class is None:
+            print("No PATS-C detection classes available in this section.")
+            break
 
         # Initialize a start and end date, and set the time to 12:00:00:00 precisely.
         start_datetime = (datetime.today() - timedelta(days=31)).replace(hour=12, minute=0, second=0, microsecond=0)
@@ -122,7 +123,7 @@ if __name__ == "__main__":
 
         # Download the detections in the example section, from the specified sensor, from the specified insect class, in the specified time frame.
         # And make an scatter plot from it.
-        df_detections = pats_service.download_c_detection_features(example_section["id"], some_row_id, some_post_id, some_system_id, some_insect_class["id"], start_datetime, end_datetime)
+        df_detections = pats_service.download_c_detection_features(example_section["id"], some_row_id, some_post_id, some_insect_class["id"], start_datetime, end_datetime)
         if df_detections.empty:
             print("Warning: no detections!")
         else:
@@ -131,14 +132,24 @@ if __name__ == "__main__":
             # From the first detection we downloaded, get the unique id.
             # We will download the flight track of the insect in this detection, and show a plot of it.
             some_insect = df_detections["uid"].iloc[0]
-            df_flight = pats_service.download_c_flight_track(example_section["id"], some_insect)
-            example_plots.c_flight_3d_plot(df_flight)
+            try:
+                df_flight = pats_service.download_c_flight_track(example_section["id"], some_insect)
+                if not df_flight.empty:
+                    example_plots.c_flight_3d_plot(df_flight)
+                else:
+                    print("No flight track data available.")
+            except PatsServiceError as e:
+                print(e)
 
             # We can also download the video of the insect.
             # Word of warning: this download can easily take over a minute, as the render is being done on demand on the edge.
-            mkv_data = pats_service.download_c_video(example_section["id"], some_insect)
-            with open("temp_video.mkv", "wb") as file:
-                file.write(mkv_data)  # open with any normal video player, e.g. vlc
+            try:
+                mkv_data = pats_service.download_c_video(example_section["id"], some_insect)
+                with open("temp_video.mkv", "wb") as file:
+                    file.write(mkv_data)  # open with any normal video player, e.g. vlc
+            except PatsServiceError as e:
+                print(e)
+            break  # One device with detections is enough for the media examples.
 
     # Show the plots, the program will not terminate while the plots are open.
     plt.show(block=True)

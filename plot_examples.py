@@ -36,6 +36,8 @@ class ExamplePlots():
             # Retrieve information from this sensor.
             # Read in a pandas dataframe with all counts from this sensor.
             df = pd.DataFrame.from_records(patsc["counts"])
+            if df.empty:
+                continue
             post_id = patsc["post_id"]
             row_id = patsc["row_id"]
 
@@ -75,13 +77,15 @@ class ExamplePlots():
         """
         # Loop over all pats c sensors.
         for patsc in counts["c"]:
-            # Validate the "average_24h_bin" flag was turned on in the /api/count call.
+            # Validate the "average_24h_bin" flag was turned on in the counts call.
             if "avg_counts_24h" not in patsc:
                 return
 
             # Retrieve information from this sensor.
             # Read in a pandas dataframe with all counts from this sensor.
             df = pd.DataFrame.from_records(patsc["avg_counts_24h"])
+            if df.empty:
+                continue
             post_id = patsc["post_id"]
             row_id = patsc["row_id"]
 
@@ -118,6 +122,8 @@ class ExamplePlots():
         # Read the new counts into a dataframe, drop NaN rows and make the date the index.
         df = pd.DataFrame.from_records(trapeye["new_counts"])
         df.dropna(axis=0, how="any", inplace=True)
+        if df.empty:
+            return
         df["date"] = pd.to_datetime(df["date"], format="%Y%m%d")
         df = df.set_index("date")
 

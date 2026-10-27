@@ -1,10 +1,8 @@
 # file: pats_service.py
-import json
 import logging
-import sys
 from datetime import datetime
 from io import BytesIO
-from typing import List, Optional
+from typing import List
 
 import pandas as pd
 import requests
@@ -21,8 +19,6 @@ class PatsService:
         user: str,
         passw: str,
         server: str = "https://pats-c.com",
-        # server: str = "https://beta.pats-c.com", # beta server: be aware, not stable and used for experimental stuff
-        # server: str = "http://127.0.0.1:5000",  # local testing
         timeout: int = 45,
     ):
         """Constructor method for the "PatsService" class.
@@ -35,19 +31,28 @@ class PatsService:
             timeout(int, optional): number of seconds before any requests made to the server will timeout. Defaults to 45 seconds.
         """
         self.logger = logging.getLogger(name="log")
-        self.server: str = server
+        self.server: str = server.rstrip("/")
         self.timeout: int = timeout
-        self.token: str = self.__retrieve_token_from_server(user, passw, server)
+        self.session = requests.Session()
+        self.token: str = self.__retrieve_token_from_server(user, passw)
+        self.session.headers.update({"Authorization": "Bearer " + self.token})
 
-    def __retrieve_token_from_server(self, user: str, passw: str, server: str) -> str:
+    def _request(self, method: str, path: str, **kwargs) -> requests.Response:
+        try:
+            response = self.session.request(method, self.server + path, timeout=self.timeout, allow_redirects=False, **kwargs)
+        except requests.RequestException as exc:
+            raise PatsServiceError(f"{method} {path} failed ({type(exc).__name__}); check connectivity or increase timeout.") from None
+        if response.status_code != 200:
+            raise PatsServiceError(f"{method} {path} failed (HTTP {response.status_code}); check credentials, section access and request parameters.")
+        return response
+
+    def __retrieve_token_from_server(self, user: str, passw: str) -> str:
         """Private method to retrieve api token from server.
-        If retrieving the token fails, the program exits with exit code 1.
-        As there is no way to gracefully recover.
+        Raises PatsServiceError if authentication fails.
 
         Args:
             user (str): username of the account from which the token is to be retrieved.
             passw (str): password of the account from which the token is to be retrieved.
-            server (str): the url to the server.
 
         Returns:
             str: the access token, that can be used for GET requests.
@@ -57,17 +62,14 @@ class PatsService:
         # Initialize header.
         request_body = {"username": user, "password": passw}
 
-        # Send request, and validate response code.
-        response = requests.post(server + "/token", request_body, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(
-                f"Retrieving token from server failed: {response.status_code!s}, msg: {response.text}",
-                exc_info=True,
-            )
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("POST", "/token", data=request_body)
 
+        token = response.json().get("access_token")
+        if not isinstance(token, str) or not token:
+            raise PatsServiceError("POST /token returned no access token.")
         self.logger.info(f"Successfully retrieved API token from server: {self.server}")
-        return response.json()["access_token"]
+        return token
 
     def download_detection_classes(self) -> dict:
         """Download detection classes from pats server.
@@ -99,19 +101,13 @@ class PatsService:
         """
         self.logger.debug("Retrieving detection classes from pats server")
 
-        # Initialize headers.
-        headers = {"Authorization": "Bearer " + self.token}
-
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/detection_classes", headers=headers, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(f"Download detection classes failed: {response.status_code!s}, msg: {response.text}")
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/detection_classes")
 
         self.logger.info("Successfully retrieved detection classes from pats server")
         return response.json()["detection_classes"]
 
-    def download_sections(self) -> dict:
+    def download_sections(self) -> list:
         """Download sections from pats server.
         Sections contain a lot of meta data.
 
@@ -141,10 +137,10 @@ class PatsService:
                             },
                         ],
                         "greenhouse_name": "your_greenhouse_name",
-                        "hubspot_company_id": 0123456789,
                         "id": 123,
                         "label": "section_label",
                         "n_weekly_trapeye_photos": 3,
+                        "n_weekly_trapeye_photos_contract": 3,
                         "name": "a_name",
                         "timezone": "Europe/Amsterdam"
                     }
@@ -153,28 +149,20 @@ class PatsService:
         }
 
         Returns:
-            dict: dict containing all sections. Each section contains meta data about it self,
+            list: list containing all sections. Each section contains meta data about itself,
                   and a list of detection classes available to that section.
         """
         self.logger.debug("Retrieving sections from pats server")
 
-        # Initialize headers.
-        headers = {"Authorization": "Bearer " + self.token}
-
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/sections", headers=headers, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(f"Download sections failed: {response.status_code!s}, msg: {response.text}")
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/sections")
 
         self.logger.info("Successfully sections from pats server")
-        return json.loads(response.text)["sections"]
-        # return response.json()['sections'] # this doesn't work for me? Maybe a python 3.10 issue?
+        return response.json()["sections"]
 
     def download_spots(self, section_id: int, snapping_mode: str = "disabled") -> dict:
         """Method used to download the spots from the Pats server.
-        The json consists of two dictionaries, the first containing the spots for c systems,
-        and the second containing spots for trapeye systems.
+        The JSON contains lists grouped as c, trapeye, marker and gateway.
 
         json example:
             {
@@ -200,31 +188,20 @@ class PatsService:
             }
 
         Args:
-            section_id (int, optional): the id of the section for which the spots will be downloaded.
-            snapping_mode(str, optional): sets the map snapping mode on the hand placed location of sensors. Defaults to 'disabled'. Options:
-                'auto': automatic selection between row/post mode
-                'row': snap using the assumption most trapeyes are placed in rows
-                'post': snap using the assumption most trapeyes are placed in posts
-                'disabled': no snapping, return orignaly scanned gps locations
-            map_snapping(int, optional): to be deprecated in a future release in favor of snapping_mode
+            section_id (int): the id of the section for which the spots will be downloaded.
+            snapping_mode (str, optional): retained for caller compatibility; ignored by the v2 API.
+                Locations are returned as stored by the server.
 
         Returns:
             dict: a dict containing the json response body.
         """
         self.logger.debug("Downloading spots from pats server")
 
-        # Initialize header and request body.
-        headers = {"Authorization": "Bearer " + self.token}
-        params = {"section_id": str(section_id), "snapping_mode": snapping_mode}
+        # Initialize query parameters.
+        params = {"section_id": str(section_id)}
 
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/spots", headers=headers, params=params, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(
-                f"Download spots failed: {response.status_code}, msg: {response.text}",
-                exc_info=True,
-            )
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/spots", params=params)
 
         self.logger.info("Successfully retrieved spots from pats servers")
         return response.json()
@@ -345,8 +322,7 @@ class PatsService:
         detection_class_ids_str: str | None = ",".join(map(str, detection_class_ids)) if detection_class_ids else None
         average_24h_bin_num: int = int(average_24h_bin)
 
-        # Initialize the header and request body.
-        headers = {"Authorization": "Bearer " + self.token}
+        # Initialize query parameters.
         params = {
             "section_id": section_id_str,
             "start_date": start_date_formatted,
@@ -356,14 +332,8 @@ class PatsService:
             "average_24h_bin": average_24h_bin_num,
         }
 
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/counts", headers=headers, params=params, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(
-                f"Download counts failed: {response.status_code}, msg: {response.text}",
-                exc_info=True,
-            )
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/counts", params=params)
 
         self.logger.info("Successfully retrieved counts from pats servers")
         return response.json()
@@ -401,8 +371,7 @@ class PatsService:
         start_date_formatted: str = start_date.strftime("%Y%m%d")
         end_date_formatted: str = end_date.strftime("%Y%m%d")
 
-        # Initialize the header and request body.
-        headers = {"Authorization": "Bearer " + self.token}
+        # Initialize query parameters.
         params = {
             "section_id": str(section_id),
             "row_id": str(row_id),
@@ -411,14 +380,8 @@ class PatsService:
             "end_date": end_date_formatted,
         }
 
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/trapeye_photo_list", headers=headers, params=params, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(
-                f"Download photo list failed: {response.status_code}, msg: {response.text}",
-                exc_info=True,
-            )
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/trapeye_photo_list", params=params)
 
         self.logger.info("Successfully downloaded photo list from pats server")
         return response.json()["photos"]
@@ -436,8 +399,7 @@ class PatsService:
             Image.Image: the downloaded image.
         """
         self.logger.debug(f"Downloading trapeye photo: {photo_id}")
-        # Initialize the header and request body.
-        headers = {"Authorization": "Bearer " + self.token}
+        # Initialize query parameters.
         params = {
             "section_id": str(section_id),
             "row_id": str(row_id),
@@ -445,30 +407,22 @@ class PatsService:
             "datetime": photo_id,
         }
 
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/download_trapeye_photo", headers=headers, params=params, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(
-                f"Download photo failed: {response.status_code}, msg: {response.text}",
-                exc_info=True,
-            )
-            raise PatsServiceError(response.text)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/download_trapeye_photo", params=params)
 
         return Image.open(BytesIO(response.content))
 
     def download_c_detection_features(self,
                                       section_id: int,
-                                      row_id: Optional[int],
-                                      post_id: Optional[int],
-                                      system_id: Optional[int],
+                                      row_id: int,
+                                      post_id: int,
                                       detection_class_id: int,
                                       start_date: datetime,
                                       end_date: datetime) -> pd.DataFrame:
         """Download c detection features from pats.
-        The row_id, post_id and system_id are optional, this is to ensure backwards compatibility.
-        The system_id's are legacy, and should be avoided. New behavior is the combination of row_id and post_id.
+        Both row_id and post_id are required integers.
 
-        The datetime in the response body is in the format "%Y%m%d_%H%M%S".
+        Request times and the response's datetime field use "%Y%m%d_%H%M%S" in the section timezone.
         All units are in SI base units.
 
         json example:
@@ -494,9 +448,8 @@ class PatsService:
 
         Args:
             section_id (int): the id of the section where this c sensor is located.
-            row_id (Optional[int]): the id of the row the sensor is located.
-            post_id (Optional[int]): the id of the post the sensor is located.
-            system_id (Optional[int]): deprecated! the id of the system that took the measurements.
+            row_id (int): the id of the row the sensor is located.
+            post_id (int): the id of the post the sensor is located.
             detection_class_id (int): the id of the detection class, these ids can be found via the "download_detection_classes" endpoint.
             start_date (datetime): the start date of the measurements, date of the earliest measurement.
             end_date (datetime): the end date of the measurements, date of the latest measurement.
@@ -504,43 +457,25 @@ class PatsService:
         Returns:
             pd.DataFrame: pandas dataframe containing the information contained in data.
         """
+        if any(not isinstance(value, int) or isinstance(value, bool) for value in (row_id, post_id)):
+            raise ValueError("row_id and post_id must be integers for detection features.")
         self.logger.debug("Retrieving c detection features")
         # Format the start and end date.
         start_date_formatted: str = start_date.strftime("%Y%m%d_%H%M%S")
         end_date_formatted: str = end_date.strftime("%Y%m%d_%H%M%S")
 
-        # Initialize the header and request body.
-        headers = {"Authorization": "Bearer " + self.token}
-        params = {}
+        # Initialize query parameters.
+        params = {
+            "section_id": str(section_id),
+            "row_id": str(row_id),
+            "post_id": str(post_id),
+            "detection_class_id": str(detection_class_id),
+            "start_datetime": start_date_formatted,
+            "end_datetime": end_date_formatted,
+        }
 
-        # system_id is legacy code, this if statement is to ensure backward compatibility.
-        # The preferred body is the one with a row and post id.
-        if system_id is None:
-            params = {
-                "section_id": str(section_id),
-                "row_id": str(row_id),
-                "post_id": str(post_id),
-                "detection_class_id": str(detection_class_id),
-                "start_datetime": start_date_formatted,
-                "end_datetime": end_date_formatted,
-            }
-        else:
-            params = {
-                "section_id": str(section_id),
-                "system_id": str(system_id),
-                "detection_class_id": str(detection_class_id),
-                "start_datetime": start_date_formatted,
-                "end_datetime": end_date_formatted,
-            }
-
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/download_detection_features", headers=headers, params=params, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(
-                f"Download c detection features failed: {response.status_code}, msg: {response.text}",
-                exc_info=True,
-            )
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/download_detection_features", params=params)
 
         self.logger.info("Successfully downloaded c detection features")
         return pd.DataFrame.from_records(response.json()["data"])
@@ -554,7 +489,6 @@ class PatsService:
             {
                 "data": [
                     {
-                        "Unnamed: 32": NaN,
                         "acc_valid_insect": 0,
                         "disparity_insect": 20.8008,
                         "elapsed": 1207.1165,
@@ -600,21 +534,14 @@ class PatsService:
             pd.DataFrame: pandas dataframe containing the information contained in data.
         """
         self.logger.debug("Retrieving c flight track")
-        # Initialize the header and request body.
-        headers = {"Authorization": "Bearer " + self.token}
+        # Initialize query parameters.
         params = {
             "section_id": str(section_id),
             "detection_uid": str(detection_uid),
         }
 
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/download_c_flight_track", headers=headers, params=params, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(
-                f"Download c flight track failed: {response.status_code}, msg: {response.text}",
-                exc_info=True,
-            )
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/download_c_flight_track", params=params)
 
         self.logger.info(f"Successfully downloaded c flight track from: {detection_uid}")
         return pd.DataFrame.from_records(response.json()["data"])
@@ -633,22 +560,15 @@ class PatsService:
         self.logger.debug("Retrieving c video from pats")
         raw_stereo_num: int = int(raw_stereo)
 
-        # Initialize the header and request body.
-        headers = {"Authorization": "Bearer " + self.token}
+        # Initialize query parameters.
         params = {
             "section_id": str(section_id),
             "detection_uid": str(detection_uid),
             "raw_stereo": str(raw_stereo_num)
         }
 
-        # Send request, and validate response code.
-        response = requests.get(self.server + "/api/download_c_video", headers=headers, params=params, timeout=self.timeout)
-        if response.status_code != 200:
-            self.logger.critical(
-                f"Download c video failed: {response.status_code}, msg: {response.text}",
-                exc_info=True,
-            )
-            sys.exit(1)
+        # Send request and check the HTTP status.
+        response = self._request("GET", "/api/v2/download_c_video", params=params)
 
         self.logger.info(f"Successfully downloaded c video from detection: {detection_uid}")
         return response.content

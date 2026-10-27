@@ -4,4 +4,3 @@ python-dotenv
 requests
 pandas
 pillow
-PyQt5
