@@ -1,6 +1,5 @@
 # file: logger.py
 import logging
-import logging.handlers
 
 from colorlog import ColoredFormatter
 

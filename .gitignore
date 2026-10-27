@@ -2,4 +2,4 @@
 .auth*
 temp_video.mkv
 
-/__pycache__*
+__pycache__/

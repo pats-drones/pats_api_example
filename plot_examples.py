@@ -36,6 +36,8 @@ class ExamplePlots():
             # Retrieve information from this sensor.
             # Read in a pandas dataframe with all counts from this sensor.
             df = pd.DataFrame.from_records(patsc["counts"])
+            if df.empty:
+                continue
             post_id = patsc["post_id"]
             row_id = patsc["row_id"]
 
@@ -75,13 +77,15 @@ class ExamplePlots():
         """
         # Loop over all pats c sensors.
         for patsc in counts["c"]:
-            # Validate the "average_24h_bin" flag was turned on in the /api/count call.
+            # Validate the "average_24h_bin" flag was turned on in the counts call.
             if "avg_counts_24h" not in patsc:
                 return
 
             # Retrieve information from this sensor.
             # Read in a pandas dataframe with all counts from this sensor.
             df = pd.DataFrame.from_records(patsc["avg_counts_24h"])
+            if df.empty:
+                continue
             post_id = patsc["post_id"]
             row_id = patsc["row_id"]
 
@@ -100,8 +104,9 @@ class ExamplePlots():
             plt.ylabel("Insect flights")
             plt.legend()
 
-    def trapeye_plot(self, counts: dict, section: dict, insect_table: dict) -> None:
-        """Plot and example figure from a trapeye.
+    def trapeye_plot(self, counts: dict, section: dict, insect_table: dict, *, weekly: bool = False) -> None:
+        """Plot new counts, or Vertel weekly counts when weekly=True.
+        Missing values remain gaps; incomplete weekly values are separate crosses.
         In contrast to the example plots from the c sensors, here we will only show one example plot.
         The plot corresponds to the 0th trap eye sensor.
 
@@ -109,17 +114,28 @@ class ExamplePlots():
             counts (dict): the response body out of the counts endpoint.
             section (dict): the section from where these counts originate.
             insect_table (dict): dictionary containing the detection classes.
+            weekly (bool): plot Vertel weekly counts if available instead of new counts.
         """
-        # Retrieve informatino about the trapeye.
+        if not counts["trapeye"]:
+            return
+
+        # Retrieve information about the first historical row/post position.
         trapeye = counts["trapeye"][0]
         row_id = trapeye["row_id"]
         post_id = trapeye["post_id"]
 
-        # Read the new counts into a dataframe, drop NaN rows and make the date the index.
-        df = pd.DataFrame.from_records(trapeye["new_counts"])
-        df.dropna(axis=0, how="any", inplace=True)
+        # Keep missing values so one class cannot discard another class's counts.
+        df = pd.DataFrame.from_records(trapeye.get("weekly_counts" if weekly else "new_counts", []))
+        if df.empty:
+            return
         df["date"] = pd.to_datetime(df["date"], format="%Y%m%d")
         df = df.set_index("date")
+
+        incomplete = pd.Series(False, index=df.index)
+        if weekly:
+            quality = pd.DataFrame.from_records(trapeye["quality"])
+            quality["date"] = pd.to_datetime(quality["date"], format="%Y%m%d")
+            incomplete = quality.set_index("date")["weekly_count_incomplete"].reindex(df.index)
 
         # Start the figure, and generate the label to be used in the title.
         plt.figure()
@@ -128,20 +144,23 @@ class ExamplePlots():
         # Loop over the insects, and add them to the plot.
         for insect_id in df.columns:
             insect = insect_table[insect_id]
-            df[insect_id].plot(label=f"""{insect['label']} ({insect['bb_label']})""")
+            values = pd.to_numeric(df[insect_id])
+            ax = values.mask(incomplete).plot(label=insect["label"], marker="o")
+            if weekly and incomplete.any():
+                plt.scatter(df.index[incomplete], values[incomplete], marker="x", color=ax.lines[-1].get_color(), label=f"{insect['label']} (incomplete; not newly validated)")
 
         # Add the title to the plot, and give names to the axes. Also add a legend to the plot.
         plt.title(f"Trap-Eye @ {label} row {row_id} post {post_id}")
         plt.xlabel("Date")
-        plt.ylabel("Insects fresh on the card")
+        plt.ylabel("Weekly insect counts" if weekly else "Insects fresh on the card")
         plt.legend()
 
     def trapeye_counts_to_excel(self, counts: dict, insect_table: dict, file_path: str,) -> None:
         """Save Trap-Eye counts to an Excel workbook grouped by insect class.
 
         The resulting workbook contains one worksheet per insect. Each worksheet
-        has a row for every date and a column for each Trap-Eye sensor,
-        mirroring the data that is visualised in :meth:`trapeye_plot`.
+        has a row for every date and a column for each historical row/post position.
+        Missing new counts stay blank; quality flags are not exported.
 
         Args:
             counts (dict): the response body out of the counts endpoint.
@@ -163,10 +182,6 @@ class ExamplePlots():
 
             df = pd.DataFrame.from_records(trapeye_counts)
             if df.empty or "date" not in df.columns:
-                continue
-
-            df.dropna(axis=0, how="any", inplace=True)
-            if df.empty:
                 continue
 
             df["date"] = pd.to_datetime(df["date"], format="%Y%m%d")
