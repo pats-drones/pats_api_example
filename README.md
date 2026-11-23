@@ -117,6 +117,17 @@ Section metadata keeps two separate photo-frequency fields:
 `n_weekly_trapeye_photos_contract` is the contracted number (zero means no
 Trap-Eye contract is configured).
 
+## Device identifiers
+
+- `device_id` is the integer hardware identifier returned for Trap-Eye, PATS-C
+  and gateway spots and for PATS-C count records. A count record's `spot_id`
+  identifies the spot.
+- `device_str` is a prefixed hardware identifier such as `trapeye9876` or
+  `pats123`. `qr_code` is the original scanned content. These fields are used
+  elsewhere in the Dashboard API. The monitoring endpoints below use numeric
+  IDs, row/post coordinates or detection UIDs as documented for each response
+  or request.
+
 ## Python usage examples
 
 The snippets below continue from the same client and section. Choose dates in the
@@ -147,10 +158,11 @@ counts = client.download_counts(
     average_24h_bin=True, model=counts_model,
 )
 print(counts["trapeye"])
-print(counts["c"])
+for record in counts["c"]:
+    print(record["counts"])
 ```
 
-Counts are returned unchanged as a dictionary containing `trapeye` and `c` lists.
+Counts are returned as a dictionary containing `trapeye` and `c` lists.
 
 `average_24h_bin=True` adds `avg_counts_24h`: hourly totals across the range,
 ordered from noon through the following morning. Despite the parameter name,
@@ -209,9 +221,10 @@ for class_id, metadata in insect_table.items():
 
 Each Trap-Eye item contains `row_id`, `post_id` and daily series. Numeric records
 have a `date` in `YYYYMMDD` format and string detection-class IDs as keys.
-Series are grouped by **historical row/post position**, not hardware serial
-number. Replacing hardware at the same position shares its series; moving it to
-another position creates a separate series.
+Series are grouped by **historical row/post position**. Replacing hardware at
+the same position shares its series. Moving it to another position creates a
+separate series. Use `download_spots()` to look up the device currently assigned
+to a position.
 
 | Series | Meaning |
 | --- | --- |

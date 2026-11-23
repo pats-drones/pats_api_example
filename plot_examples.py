@@ -107,8 +107,7 @@ class ExamplePlots():
     def trapeye_plot(self, counts: dict, section: dict, insect_table: dict, *, weekly: bool = False) -> None:
         """Plot new counts, or Vertel weekly counts when weekly=True.
         Missing values remain gaps; incomplete weekly values are separate crosses.
-        In contrast to the example plots from the c sensors, here we will only show one example plot.
-        The plot corresponds to the 0th trap eye sensor.
+        Show the first historical row/post position.
 
         Args:
             counts (dict): the response body out of the counts endpoint.

@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     # Download the spots of all sensors in the example section,
     # here you can find information about individual sensors, like the location.
-    spots = pats_service.download_spots(section_id=example_section["id"], snapping_mode="disabled")
+    spots = pats_service.download_spots(section_id=example_section["id"])
 
     # Download the counts from all sensors in the example section,
     # for the selected insect(s), for the selected date range.
@@ -98,9 +98,7 @@ if __name__ == "__main__":
         example_plots.trapeye_plot(counts, example_section, insect_table)
         example_plots.trapeye_plot(counts, example_section, insect_table, weekly=True)
 
-    # up to this point Trap-Eye and PATS-C data is virtually the same.
-    # However when we go lower TrapEye periodically photographs a bulk and PATS-C stereo-video records individuals.
-    # Thus we will split them up, lets start with an image from a Trap-Eye!
+    # Trap-Eye images are retrieved by row/post position and timestamp.
     if len(spots["trapeye"]):
         # For the example select a random row and post id.
         some_row_id = spots["trapeye"][0]["row_id"]
@@ -123,7 +121,7 @@ if __name__ == "__main__":
         some_row_id = c_spot.get("row_id")
         some_post_id = c_spot.get("post_id")
         if any(not isinstance(value, int) or isinstance(value, bool) for value in (some_row_id, some_post_id)):
-            print(f"Skipping PATS-C detection features for device {c_spot.get('system_id')}: valid row_id and post_id coordinates are required.")
+            print(f"Skipping PATS-C detection features for device {c_spot['device_id']}: valid row_id and post_id coordinates are required.")
             continue
 
         # Select the first insect that is available for pats-c

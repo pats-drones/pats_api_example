@@ -175,18 +175,20 @@ class PatsService:
                         "longitude": 9.8765432,
                         "post_id": 21,
                         "row_id": 42,
-                        "system_id": 123
-                    },
+                        "device_id": 123
+                    }
                 ],
-                 "trapeye": [
+                "trapeye": [
                     {
-                        "latitude": 98.76543210987654,
+                        "latitude": 52.1,
                         "longitude": 1.2345678901234,
                         "post_id": 42,
                         "row_id": 21,
-                        "unit_id": 9876
-                    },
-                ]
+                        "device_id": 9876
+                    }
+                ],
+                "marker": [],
+                "gateway": []
             }
 
         Args:
@@ -195,7 +197,7 @@ class PatsService:
                 Locations are returned as stored by the server.
 
         Returns:
-            dict: a dict containing the json response body.
+            dict: the JSON response body.
         """
         self.logger.debug("Downloading spots from pats server")
 
@@ -219,7 +221,7 @@ class PatsService:
         *,
         model: Literal["beedrill", "vertel"],
     ):
-        """Download counts unchanged, grouped by historical row/post position.
+        """Download PATS-C counts and Trap-Eye counts by historical row/post position.
 
         Args:
             start_date (datetime): first calendar date in the section's timezone.
@@ -368,11 +370,11 @@ class PatsService:
                         "row_id": 43,
                         "size": 0.014341787433628319,
                         "start_datetime": "Mon, 08 Jul 2024 20:25:45 GMT",
-                        "uid": 012345678,
+                        "uid": 12345678,
                         "vel_max": 1.7198010272426867,
                         "vel_mean": 1.2854506213467454,
                         "vel_std": 0.2336045734746302
-                    },
+                    }
                 ]
             }
 
